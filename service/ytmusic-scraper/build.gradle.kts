@@ -15,7 +15,8 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.common)
+    implementation(project(":core:common"))
+    implementation(libs.core.ktx)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)

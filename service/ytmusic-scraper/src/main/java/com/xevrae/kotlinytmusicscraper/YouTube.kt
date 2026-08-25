@@ -1,6 +1,6 @@
 package com.xevrae.kotlinytmusicscraper
 
-import com.eygraber.uri.toKmpUri
+import androidx.core.net.toUri
 import com.xevrae.kotlinytmusicscraper.YouTube.Companion.DEFAULT_VISITOR_DATA
 import com.xevrae.kotlinytmusicscraper.extension.toListFormat
 import com.xevrae.kotlinytmusicscraper.models.AccountInfo
@@ -1304,22 +1304,22 @@ class YouTube {
                         ).body<PlayerResponse>()
 
                         val processedRes = tempRes.let {
-                            val fexp = it.streamingData?.serverAbrStreamingUrl?.toKmpUri()?.getQueryParameter("fexp")
+                            val fexp = it.streamingData?.serverAbrStreamingUrl?.toUri()?.getQueryParameter("fexp")
                             val playbackTracking = it.playbackTracking
                             it.copy(
                                 playbackTracking = playbackTracking?.copy(
                                     atrUrl = playbackTracking.atrUrl?.copy(
-                                        baseUrl = playbackTracking.atrUrl.baseUrl?.toKmpUri()?.buildUpon()?.apply {
+                                        baseUrl = playbackTracking.atrUrl.baseUrl?.toUri()?.buildUpon()?.apply {
                                             if (fexp != null) appendQueryParameter("fexp", fexp)
                                         }?.build()?.toString()
                                     ),
                                     videostatsPlaybackUrl = playbackTracking.videostatsPlaybackUrl?.copy(
-                                        baseUrl = playbackTracking.videostatsPlaybackUrl.baseUrl?.toKmpUri()?.buildUpon()?.apply {
+                                        baseUrl = playbackTracking.videostatsPlaybackUrl.baseUrl?.toUri()?.buildUpon()?.apply {
                                             if (fexp != null) appendQueryParameter("fexp", fexp)
                                         }?.build()?.toString()
                                     ),
                                     videostatsWatchtimeUrl = playbackTracking.videostatsWatchtimeUrl?.copy(
-                                        baseUrl = playbackTracking.videostatsWatchtimeUrl.baseUrl?.toKmpUri()?.buildUpon()?.apply {
+                                        baseUrl = playbackTracking.videostatsWatchtimeUrl.baseUrl?.toUri()?.buildUpon()?.apply {
                                             if (fexp != null) appendQueryParameter("fexp", fexp)
                                         }?.build()?.toString()
                                     )
