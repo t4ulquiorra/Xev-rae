@@ -36,7 +36,6 @@ dependencies {
     implementation(libs.ksoup.html)
     implementation(libs.ksoup.entities)
     implementation(libs.ffmpeg.kit.audio)
-    implementation(libs.newpipe.extractor)
     implementation(libs.brave.extractor)
     implementation(libs.gson)
     implementation(libs.okhttp3)
