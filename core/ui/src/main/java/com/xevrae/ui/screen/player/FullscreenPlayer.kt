@@ -778,7 +778,7 @@ fun FullScreenRotationImmersive(
     androidx.compose.runtime.DisposableEffect(true) {
         onLaunch.invoke()
         val activity = context.findActivity()
-        activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         val window = context.findActivity().window
         val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
 
@@ -792,7 +792,7 @@ fun FullScreenRotationImmersive(
             activity.requestedOrientation =
                 when (originalOrientation) {
                     android.content.res.Configuration.ORIENTATION_PORTRAIT -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                    android.content.res.Configuration.ORIENTATION_LANDSCAPE -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    android.content.res.Configuration.ORIENTATION_LANDSCAPE -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                     else -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 }
             activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
