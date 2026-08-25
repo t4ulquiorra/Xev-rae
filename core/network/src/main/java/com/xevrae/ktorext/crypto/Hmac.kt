@@ -1,7 +1,7 @@
 package com.xevrae.ktorext.crypto
 
 import java.time.Instant
-import java.util.*
+import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -58,4 +58,11 @@ class Hmac(algorithm: String, secretKey: String) {
         val currentTime = System.currentTimeMillis()
         return (currentTime - requestTime) < tokenTtl
     }
+}
+
+object HmacUri {
+    const val BASE_HMAC_URI = "/v1"
+    const val TRANSLATED_HMAC_URI = "/v1/translated"
+    const val VOTE_HMAC_URI = "/v1/vote"
+    const val VOTE_TRANSLATED_HMAC_URI = "/v1/translated/vote"
 }

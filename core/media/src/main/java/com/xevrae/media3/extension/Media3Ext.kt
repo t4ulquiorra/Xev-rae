@@ -16,7 +16,7 @@ import com.xevrae.domain.data.player.GenericCommandButton
 import com.xevrae.domain.mediaservice.handler.RepeatState
 import com.xevrae.domain.utils.connectArtists
 import com.xevrae.domain.utils.toListName
-import com.xevrae.media3.R
+import com.xevrae.android.media.R
 
 fun MediaItem?.toSongEntity(): SongEntity? =
     if (this != null) {

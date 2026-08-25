@@ -48,7 +48,7 @@ import com.xevrae.domain.utils.toPlaylistEntity
 import com.xevrae.domain.utils.toSongEntity
 import com.xevrae.domain.utils.toTrack
 import com.xevrae.logger.Logger
-import com.xevrae.media3.R
+import com.xevrae.android.media.R
 import com.xevrae.media3.extension.toMediaItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

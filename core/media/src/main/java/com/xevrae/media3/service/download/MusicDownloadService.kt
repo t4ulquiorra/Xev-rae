@@ -11,7 +11,7 @@ import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import androidx.media3.exoplayer.scheduler.Scheduler
-import com.xevrae.media3.R
+import com.xevrae.android.media.R
 import com.xevrae.domain.mediaservice.handler.DownloadHandler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

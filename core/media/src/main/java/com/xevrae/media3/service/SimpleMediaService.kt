@@ -31,9 +31,11 @@ import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
 import com.xevrae.domain.mediaservice.player.MediaPlayerInterface
 import com.xevrae.logger.Logger
 import com.xevrae.media3.exoplayer.CrossfadeExoPlayerAdapter
-import com.xevrae.media3.R
+import com.xevrae.android.media.R
 import com.xevrae.media3.extension.toCommandButton
 import com.xevrae.media3.utils.CoilBitmapLoader
+import kotlin.time.Duration.Companion.seconds
+import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
