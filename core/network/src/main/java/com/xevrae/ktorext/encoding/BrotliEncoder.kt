@@ -28,3 +28,7 @@ object BrotliEncoder : ContentEncoder {
 }
 
 fun createBrotliEncoder(): ContentEncoder = BrotliEncoder
+
+fun io.ktor.client.plugins.compression.ContentEncodingConfig.brotli(quality: Float? = null) {
+    customEncoder(createBrotliEncoder(), quality)
+}
