@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
-import org.koin.core.component.inject
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.add_to_queue
 import xevrae.composeapp.generated.resources.added_to_playlist

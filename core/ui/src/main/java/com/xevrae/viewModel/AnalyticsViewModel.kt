@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.xevrae.viewModel
 
 import androidx.lifecycle.viewModelScope

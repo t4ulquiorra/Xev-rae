@@ -1,5 +1,9 @@
 package com.xevrae.viewModel
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
+
 import androidx.lifecycle.viewModelScope
 import com.xevrae.common.SELECTED_LANGUAGE
 import com.xevrae.domain.data.entities.SearchHistory
@@ -86,12 +90,6 @@ sealed class SearchScreenUIState {
     object Success : SearchScreenUIState()
 
     object Error : SearchScreenUIState()
-}
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
-
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     mediaPlayerHandler: MediaPlayerHandler,

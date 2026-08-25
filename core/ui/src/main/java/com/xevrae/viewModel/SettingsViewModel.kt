@@ -4,7 +4,17 @@ import androidx.lifecycle.viewModelScope
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
-import com.eygraber.uri.Uri
+import android.content.Context
+import android.net.Uri
+import com.xevrae.ui.AppGlobalContext
+import com.xevrae.extension.bytesToMB
+import com.xevrae.extension.getSizeOfFile
+import com.xevrae.extension.zipInputStream
+import com.xevrae.extension.zipOutputStream
+import java.io.File
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import com.xevrae.common.Config
 import com.xevrae.common.QUALITY
 import com.xevrae.common.SELECTED_LANGUAGE
@@ -38,7 +48,6 @@ import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.koin.core.component.inject
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.backup_create_failed
 import xevrae.composeapp.generated.resources.backup_create_success
@@ -1654,22 +1663,253 @@ data class SettingBasicAlertState(
     val dismiss: String,
 )
 
-suspend fun calculateDataFraction(cacheRepository: CacheRepository): SettingsStorageSectionFraction?
+private operator fun File.div(child: String): File = File(this, child)
+
+private fun backupFolder(
+    folder: File,
+    baseName: String,
+    zipOutputStream: ZipOutputStream,
+) {
+    if (!folder.exists() || !folder.isDirectory) return
+
+    Logger.d("BackupRestore", "Backing up folder: ${folder.absolutePath} as $baseName")
+    folder.listFiles()?.forEach { file ->
+        if (file.isFile) {
+            val entryName = "$baseName/${file.name}"
+            Logger.d("BackupRestore", "Backing up file: $entryName")
+            zipOutputStream.putNextEntry(ZipEntry(entryName))
+            file.inputStream().buffered().use { inputStream ->
+                inputStream.copyTo(zipOutputStream)
+            }
+            zipOutputStream.closeEntry()
+        } else if (file.isDirectory) {
+            Logger.d("BackupRestore", "Entering subdirectory: ${file.name}")
+            backupFolder(file, "$baseName/${file.name}", zipOutputStream)
+        }
+    }
+}
+
+private fun clearFolder(folder: File) {
+    if (folder.exists() && folder.isDirectory) {
+        Logger.d("BackupRestore", "Clearing folder: ${folder.absolutePath}")
+        folder.listFiles()?.forEach { file ->
+            if (file.isFile) {
+                Logger.d("BackupRestore", "Deleting file: ${file.name}")
+                file.delete()
+            } else if (file.isDirectory) {
+                clearFolder(file)
+                Logger.d("BackupRestore", "Deleting directory: ${file.name}")
+                file.delete()
+            }
+        }
+    }
+}
+
+private fun restoreFolder(
+    entryName: String,
+    zipInputStream: ZipInputStream,
+    baseFolderName: String,
+) {
+    val application: Context = AppGlobalContext.get() ?: return
+    Logger.d("BackupRestore", "Restoring entry: $entryName")
+
+    val relativePath = entryName.removePrefix("$baseFolderName/")
+    val targetFile = application.filesDir / baseFolderName / relativePath
+
+    Logger.d("BackupRestore", "Target file path: ${targetFile.absolutePath}")
+    Logger.d("BackupRestore", "Relative path: $relativePath")
+
+    val parentCreated = targetFile.parentFile?.mkdirs()
+    Logger.d("BackupRestore", "Parent dir created: $parentCreated, parent exists: ${targetFile.parentFile?.exists()}")
+
+    try {
+        targetFile.outputStream().use { outputStream ->
+            val bytesWritten = zipInputStream.copyTo(outputStream)
+            Logger.d("BackupRestore", "Restored file: ${targetFile.name}, bytes: $bytesWritten")
+            if (targetFile.exists()) {
+                Logger.d("BackupRestore", "File exists after restore: ${targetFile.name}, size: ${targetFile.length()}")
+            } else {
+                Logger.e("BackupRestore", "File NOT created: ${targetFile.name}")
+            }
+        }
+    } catch (e: Exception) {
+        Logger.e("BackupRestore", "Error restoring file: ${targetFile.name}")
+    }
+}
+
+suspend fun calculateDataFraction(cacheRepository: CacheRepository): SettingsStorageSectionFraction? {
+    val application: Context = AppGlobalContext.get() ?: return null
+    return withContext(Dispatchers.Default) {
+        val playerCache = cacheRepository.getCacheSize(Config.PLAYER_CACHE)
+        val downloadCache = cacheRepository.getCacheSize(Config.DOWNLOAD_CACHE)
+        val canvasCache = cacheRepository.getCacheSize(Config.CANVAS_CACHE)
+        val mStorageStatsManager =
+            application.getSystemService(android.app.usage.StorageStatsManager::class.java)
+        if (mStorageStatsManager != null) {
+            val totalByte =
+                mStorageStatsManager.getTotalBytes(android.os.storage.StorageManager.UUID_DEFAULT).bytesToMB()
+            val freeSpace =
+                mStorageStatsManager.getFreeBytes(android.os.storage.StorageManager.UUID_DEFAULT).bytesToMB()
+            val usedSpace = totalByte - freeSpace
+            val xevraeSize = getSizeOfFile(application.filesDir).bytesToMB()
+            val thumbSize = (coil3.SingletonImageLoader.get(application).diskCache?.size ?: 0L).bytesToMB()
+            val otherApp = xevraeSize.let { usedSpace.minus(it) - thumbSize }
+            val databaseSize =
+                xevraeSize - playerCache.bytesToMB() - downloadCache.bytesToMB() - canvasCache.bytesToMB()
+            if (totalByte == freeSpace + otherApp + xevraeSize + thumbSize) {
+                SettingsStorageSectionFraction(
+                    otherApp = otherApp.toFloat().div(totalByte.toFloat()),
+                    downloadCache = downloadCache.bytesToMB().toFloat().div(totalByte.toFloat()),
+                    playerCache = playerCache.bytesToMB().toFloat().div(totalByte.toFloat()),
+                    canvasCache = canvasCache.bytesToMB().toFloat().div(totalByte.toFloat()),
+                    thumbCache = thumbSize.toFloat().div(totalByte.toFloat()),
+                    freeSpace = freeSpace.toFloat().div(totalByte.toFloat()),
+                    appDatabase = databaseSize.toFloat().div(totalByte.toFloat()),
+                )
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+}
 
 suspend fun restoreNative(
     commonRepository: CommonRepository,
     uri: Uri,
     getData: () -> Unit = {},
-)
+) {
+    val application: Context = AppGlobalContext.get() ?: return
+    application.applicationContext.contentResolver.openInputStream(uri)?.use {
+        it.zipInputStream().use { inputStream ->
+            var entry =
+                try {
+                    inputStream.nextEntry
+                } catch (e: Exception) {
+                    null
+                }
+
+            var downloadFolderCleared = false
+
+            while (entry != null) {
+                Logger.d("BackupRestore", "Processing entry: ${entry.name}")
+                when {
+                    entry.name == "${com.xevrae.common.SETTINGS_FILENAME}.preferences_pb" -> {
+                        (application.filesDir / "datastore" / "${com.xevrae.common.SETTINGS_FILENAME}.preferences_pb")
+                            .outputStream()
+                            .use { outputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                    }
+
+                    entry.name == com.xevrae.common.DB_NAME -> {
+                        runBlocking(Dispatchers.IO) {
+                            commonRepository.databaseDaoCheckpoint()
+                            commonRepository.closeDatabase()
+                        }
+                        java.io.FileOutputStream(commonRepository.getDatabasePath()).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+
+                    entry.name == com.xevrae.common.EXOPLAYER_DB_NAME -> {
+                        java.io.FileOutputStream(application.getDatabasePath(com.xevrae.common.EXOPLAYER_DB_NAME)).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+
+                    entry.name.startsWith("${com.xevrae.common.DOWNLOAD_EXOPLAYER_FOLDER}/") -> {
+                        if (!downloadFolderCleared) {
+                            val downloadFolder = application.filesDir / com.xevrae.common.DOWNLOAD_EXOPLAYER_FOLDER
+                            clearFolder(downloadFolder)
+                            downloadFolderCleared = true
+                        }
+                        restoreFolder(entry.name, inputStream, "download")
+                    }
+
+                    else -> {
+                        Logger.d("BackupRestore", "Unhandled entry: ${entry.name}")
+                    }
+                }
+                entry = inputStream.nextEntry
+            }
+        }
+    }
+
+    withContext(Dispatchers.Main) {
+        multiplatform.network.cmptoast.showToast(AppGlobalContext.get()?.getString(xevrae.composeapp.generated.resources.Res.string.restore_success) ?: "", multiplatform.network.cmptoast.ToastGravity.Bottom)
+        com.xevrae.media3.di.stopService(application)
+        getData()
+        val ctx = application.applicationContext
+        val pm: android.content.pm.PackageManager = ctx.packageManager
+        val intent = pm.getLaunchIntentForPackage(ctx.packageName)
+        val mainIntent = android.content.Intent.makeRestartActivityTask(intent?.component)
+        ctx.startActivity(mainIntent)
+        Runtime.getRuntime().exit(0)
+    }
+}
 
 suspend fun backupNative(
     commonRepository: CommonRepository,
     uri: Uri,
     backupDownloaded: Boolean,
-)
+) {
+    val application: Context = AppGlobalContext.get() ?: return
+    application.applicationContext.contentResolver.openOutputStream(uri)?.use {
+        it.buffered().zipOutputStream().use { outputStream ->
+            (application.filesDir / "datastore" / "${com.xevrae.common.SETTINGS_FILENAME}.preferences_pb")
+                .inputStream()
+                .buffered()
+                .use { inputStream ->
+                    outputStream.putNextEntry(java.util.zip.ZipEntry("${com.xevrae.common.SETTINGS_FILENAME}.preferences_pb"))
+                    inputStream.copyTo(outputStream)
+                }
+            runBlocking(Dispatchers.IO) {
+                commonRepository.databaseDaoCheckpoint()
+            }
+            java.io.FileInputStream(commonRepository.getDatabasePath()).use { inputStream ->
+                outputStream.putNextEntry(java.util.zip.ZipEntry(com.xevrae.common.DB_NAME))
+                inputStream.copyTo(outputStream)
+            }
+            if (backupDownloaded) {
+                (application.getDatabasePath(com.xevrae.common.EXOPLAYER_DB_NAME))
+                    .inputStream()
+                    .buffered()
+                    .use { inputStream ->
+                        outputStream.putNextEntry(java.util.zip.ZipEntry(com.xevrae.common.EXOPLAYER_DB_NAME))
+                        inputStream.copyTo(outputStream)
+                    }
+                val downloadFolder = application.filesDir / com.xevrae.common.DOWNLOAD_EXOPLAYER_FOLDER
+                backupFolder(downloadFolder, com.xevrae.common.DOWNLOAD_EXOPLAYER_FOLDER, outputStream)
+            }
+        }
+    }
+}
 
-fun getPackageName(): String
+fun getPackageName(): String {
+    val application: Context = AppGlobalContext.get() ?: return "com.xevrae.android"
+    return application.packageName
+}
 
-fun getFileDir(): String
+fun getFileDir(): String {
+    val application: Context = AppGlobalContext.get() ?: return ""
+    return application.filesDir.absolutePath
+}
 
-fun changeLanguageNative(code: String)
+fun changeLanguageNative(code: String) {
+    val localeList =
+        androidx.core.os.LocaleListCompat.forLanguageTags(
+            if (code == "id-ID") {
+                if (android.os.Build.VERSION.SDK_INT >= 35) {
+                    "id-ID"
+                } else {
+                    "in-ID"
+                }
+            } else {
+                code
+            },
+        )
+    Logger.d("Language", localeList.toString())
+    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(localeList)
+}

@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.inject
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.added_to_playlist
 import xevrae.composeapp.generated.resources.added_to_queue

@@ -1,5 +1,9 @@
 package com.xevrae.viewModel
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
+
 import androidx.lifecycle.viewModelScope
 import com.xevrae.common.Config
 import com.xevrae.domain.data.entities.EpisodeEntity
@@ -60,12 +64,6 @@ sealed class PodcastUIEvent {
     data class Share(
         val podcastId: String,
     ) : PodcastUIEvent()
-}
-
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
-
 @HiltViewModel
 class PodcastViewModel @Inject constructor(
     mediaPlayerHandler: MediaPlayerHandler,

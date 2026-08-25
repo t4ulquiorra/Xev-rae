@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:media"))
     implementation(project(":core:data"))
+    implementation(project(":core:database"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)

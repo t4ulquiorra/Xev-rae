@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.component.inject
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.auto_created_by_youtube_music
 import xevrae.composeapp.generated.resources.downloading
