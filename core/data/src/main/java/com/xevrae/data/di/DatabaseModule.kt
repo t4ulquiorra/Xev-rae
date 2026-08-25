@@ -1,6 +1,6 @@
 package com.xevrae.data.di
 
-import DatabaseDao
+import com.xevrae.data.db.DatabaseDao
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
