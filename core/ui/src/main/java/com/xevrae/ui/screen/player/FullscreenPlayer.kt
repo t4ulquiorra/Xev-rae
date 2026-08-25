@@ -764,11 +764,6 @@ fun FullscreenPlayer(
 }
 
 @Composable
-expect fun FullScreenRotationImmersive(
-    onLaunch: () -> Unit = {},
-    onDispose: () -> Unit = {},
-)
-@Composable
 fun FullScreenRotationImmersive(
     onLaunch: () -> Unit,
     onDispose: () -> Unit,

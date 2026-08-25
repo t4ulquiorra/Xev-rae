@@ -18,7 +18,7 @@ import com.xevrae.ui.theme.typo
 @Composable
 fun MediaPlayerView(
     url: String,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     MediaPlayerView(
         modifier = modifier,
@@ -31,17 +31,17 @@ fun MediaPlayerView(
 
 @Composable
 fun MediaPlayerViewWithSubtitle(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     playerName: String,
-    shouldPip: Boolean,
-    shouldShowSubtitle: Boolean,
-    shouldScaleDownSubtitle: Boolean,
-    isInPipMode: Boolean,
+    shouldPip: Boolean = false,
+    shouldShowSubtitle: Boolean = true,
+    shouldScaleDownSubtitle: Boolean = false,
+    isInPipMode: Boolean = false,
     timelineState: TimeLine,
-    lyricsData: Lyrics?,
-    translatedLyricsData: Lyrics?,
-    mainTextStyle: TextStyle,
-    translatedTextStyle: TextStyle,
+    lyricsData: Lyrics? = null,
+    translatedLyricsData: Lyrics? = null,
+    mainTextStyle: TextStyle = typo().bodyLarge,
+    translatedTextStyle: TextStyle = typo().bodyMedium,
 ) {
     MediaPlayerViewWithSubtitle(
         playerName = playerName,
@@ -55,7 +55,7 @@ fun MediaPlayerViewWithSubtitle(
         context = LocalContext.current,
         activity = LocalActivity.current as? ComponentActivity ?: LocalContext.current.findActivity(),
         isInPipMode = isInPipMode,
-        mainTextStyle = typo().bodyLarge,
-        translatedTextStyle = typo().bodyMedium,
+        mainTextStyle = mainTextStyle,
+        translatedTextStyle = translatedTextStyle,
     )
 }

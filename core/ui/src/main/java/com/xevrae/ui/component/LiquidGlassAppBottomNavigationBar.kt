@@ -15,11 +15,50 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.Visibility
+import androidx.core.graphics.scale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.xevrae.domain.data.player.GenericMediaItem
+import com.xevrae.logger.Logger
+import com.xevrae.expect.ui.PlatformBackdrop
+import com.xevrae.ui.navigation.destination.home.HomeDestination
+import com.xevrae.ui.navigation.destination.library.LibraryDestination
+import com.xevrae.ui.navigation.destination.search.SearchDestination
+import com.xevrae.ui.screen.MiniPlayer
+import com.xevrae.viewModel.SharedViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import java.nio.IntBuffer
+import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.seconds
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.*
 
@@ -68,50 +107,9 @@ sealed class BottomNavScreen(
         },
     )
 }
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.Visibility
-import androidx.core.graphics.scale
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.xevrae.domain.data.player.GenericMediaItem
-import com.xevrae.logger.Logger
-import com.xevrae.expect.ui.PlatformBackdrop
-import com.xevrae.ui.navigation.destination.home.HomeDestination
-import com.xevrae.ui.navigation.destination.library.LibraryDestination
-import com.xevrae.ui.navigation.destination.search.SearchDestination
-import com.xevrae.ui.screen.MiniPlayer
-import com.xevrae.viewModel.SharedViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
-import java.nio.IntBuffer
-import kotlin.reflect.KClass
-import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "LiquidGlassAppBottomNavigationBar"
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LiquidGlassAppBottomNavigationBar(
     startDestination: Any,
