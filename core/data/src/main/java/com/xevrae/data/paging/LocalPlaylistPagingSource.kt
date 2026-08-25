@@ -9,7 +9,7 @@ import com.xevrae.domain.data.entities.SongEntity
 import com.xevrae.domain.utils.FilterState
 import com.xevrae.logger.Logger
 
-internal class LocalPlaylistPagingSource(
+class LocalPlaylistPagingSource(
     private val playlistId: Long,
     private val filter: FilterState,
     private val localDataSource: LocalDataSource,
@@ -51,7 +51,7 @@ internal class LocalPlaylistPagingSource(
     }
 }
 
-internal class LocalPlaylistTimeBasedPagingSource(
+class LocalPlaylistTimeBasedPagingSource(
     private val playlistId: Long,
     private val filter: FilterState,
     private val localDataSource: LocalDataSource,

@@ -52,7 +52,7 @@ import kotlinx.datetime.LocalDateTime
 
 private const val TAG = "LocalPlaylistRepositoryImpl"
 
-internal class LocalPlaylistRepositoryImpl(
+class LocalPlaylistRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
 ) : LocalPlaylistRepository {

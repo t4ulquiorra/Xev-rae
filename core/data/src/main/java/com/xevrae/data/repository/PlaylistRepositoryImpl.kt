@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 
-internal class PlaylistRepositoryImpl(
+class PlaylistRepositoryImpl(
     private val dataStoreManager: DataStoreManager,
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,

@@ -96,7 +96,7 @@ import kotlin.math.pow
 
 private val TAG = "Media3ServiceHandlerImpl"
 
-internal class MediaServiceHandlerImpl(
+class MediaServiceHandlerImpl(
     private val dataStoreManager: DataStoreManager,
     private val songRepository: SongRepository,
     private val streamRepository: StreamRepository,

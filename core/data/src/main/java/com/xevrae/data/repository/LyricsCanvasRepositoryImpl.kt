@@ -41,7 +41,7 @@ import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-internal class LyricsCanvasRepositoryImpl(
+class LyricsCanvasRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
     private val spotify: Spotify,

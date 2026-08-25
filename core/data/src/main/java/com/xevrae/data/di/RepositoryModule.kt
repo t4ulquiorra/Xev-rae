@@ -1,8 +1,10 @@
 package com.xevrae.data.di
 
-import DatabaseDao
+import android.content.Context
 import com.xevrae.common.Config.SERVICE_SCOPE
-import com.xevrae.data.io.fileDir
+import com.xevrae.data.db.MusicDatabase
+import com.xevrae.data.db.datasource.AnalyticsDatasource
+import com.xevrae.data.db.datasource.LocalDataSource
 import com.xevrae.data.repository.AccountRepositoryImpl
 import com.xevrae.data.repository.AlbumRepositoryImpl
 import com.xevrae.data.repository.AnalyticsRepositoryImpl
@@ -37,8 +39,8 @@ import com.xevrae.spotify.Spotify
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import org.xevrae.aiservice.AiClient
 import org.xevrae.lyrics.XevraeLyricsClient
@@ -52,110 +54,125 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideAccountRepository(
-        dataStoreManager: DataStoreManager,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): AccountRepository = AccountRepositoryImpl(dataStoreManager, youTube)
+    ): AccountRepository = AccountRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideAlbumRepository(
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): AlbumRepository = AlbumRepositoryImpl(databaseDao, youTube)
+    ): AlbumRepository = AlbumRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideArtistRepository(
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): ArtistRepository = ArtistRepositoryImpl(databaseDao, youTube)
+    ): ArtistRepository = ArtistRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideCommonRepository(
         @Named(SERVICE_SCOPE) coroutineScope: CoroutineScope,
-        dataStoreManager: DataStoreManager,
-        databaseDao: DatabaseDao,
-        httpClient: HttpClient,
+        database: MusicDatabase,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
         spotify: Spotify,
+        aiClient: AiClient,
+        dataStoreManager: DataStoreManager,
+        @ApplicationContext context: Context,
     ): CommonRepository {
-        return CommonRepositoryImpl(coroutineScope, dataStoreManager, databaseDao, httpClient, youTube, spotify).apply {
-            this.init("${fileDir()}/ytdlp-cookie.txt", databaseDao)
+        return CommonRepositoryImpl(
+            coroutineScope = coroutineScope,
+            database = database,
+            localDataSource = localDataSource,
+            youTube = youTube,
+            spotify = spotify,
+            aiClient = aiClient,
+            context = context,
+        ).apply {
+            this.init("${context.filesDir.absolutePath}/ytdlp-cookie.txt", dataStoreManager)
         }
     }
 
     @Provides
     @Singleton
     fun provideHomeRepository(
-        databaseDao: DatabaseDao,
+        dataStoreManager: DataStoreManager,
         youTube: YouTube,
-    ): HomeRepository = HomeRepositoryImpl(databaseDao, youTube)
+    ): HomeRepository = HomeRepositoryImpl(dataStoreManager, youTube)
 
     @Provides
     @Singleton
     fun provideLocalPlaylistRepository(
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): LocalPlaylistRepository = LocalPlaylistRepositoryImpl(databaseDao, youTube)
+    ): LocalPlaylistRepository = LocalPlaylistRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideLyricsCanvasRepository(
-        databaseDao: DatabaseDao,
-        lyricsClient: XevraeLyricsClient,
+        localDataSource: LocalDataSource,
+        youTube: YouTube,
         spotify: Spotify,
-        dataStoreManager: DataStoreManager,
+        lyricsClient: XevraeLyricsClient,
         aiClient: AiClient,
-    ): LyricsCanvasRepository = LyricsCanvasRepositoryImpl(databaseDao, lyricsClient, spotify, dataStoreManager, aiClient)
+    ): LyricsCanvasRepository = LyricsCanvasRepositoryImpl(
+        localDataSource = localDataSource,
+        youTube = youTube,
+        spotify = spotify,
+        xevraeLyrics = lyricsClient,
+        aiClient = aiClient,
+    )
 
     @Provides
     @Singleton
     fun providePlaylistRepository(
-        databaseDao: DatabaseDao,
         dataStoreManager: DataStoreManager,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): PlaylistRepository = PlaylistRepositoryImpl(databaseDao, dataStoreManager, youTube)
+    ): PlaylistRepository = PlaylistRepositoryImpl(dataStoreManager, localDataSource, youTube)
 
     @Provides
     @Singleton
     fun providePodcastRepository(
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): PodcastRepository = PodcastRepositoryImpl(databaseDao, youTube)
+    ): PodcastRepository = PodcastRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideSearchRepository(
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): SearchRepository = SearchRepositoryImpl(databaseDao, youTube)
+    ): SearchRepository = SearchRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideSongRepository(
-        databaseDao: DatabaseDao,
         dataStoreManager: DataStoreManager,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): SongRepository = SongRepositoryImpl(databaseDao, dataStoreManager, youTube)
+    ): SongRepository = SongRepositoryImpl(dataStoreManager, localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideStreamRepository(
-        dataStoreManager: DataStoreManager,
-        databaseDao: DatabaseDao,
+        localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): StreamRepository = StreamRepositoryImpl(dataStoreManager, databaseDao, null, youTube)
+    ): StreamRepository = StreamRepositoryImpl(localDataSource, youTube)
 
     @Provides
     @Singleton
     fun provideUpdateRepository(
-        httpClient: HttpClient,
-    ): UpdateRepository = UpdateRepositoryImpl(httpClient)
+        youTube: YouTube,
+    ): UpdateRepository = UpdateRepositoryImpl(youTube)
 
     @Provides
     @Singleton
     fun provideAnalyticsRepository(
-        databaseDao: DatabaseDao,
-    ): AnalyticsRepository = AnalyticsRepositoryImpl(databaseDao)
+        analyticsDatasource: AnalyticsDatasource,
+    ): AnalyticsRepository = AnalyticsRepositoryImpl(analyticsDatasource)
 }

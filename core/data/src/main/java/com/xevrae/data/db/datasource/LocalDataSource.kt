@@ -24,7 +24,7 @@ import com.xevrae.domain.extension.now
 import com.xevrae.domain.utils.FilterState
 import kotlinx.datetime.LocalDateTime
 
-internal class LocalDataSource(
+class LocalDataSource(
     private val databaseDao: DatabaseDao,
 ) {
     suspend fun checkpoint() = databaseDao.checkpoint()

@@ -32,13 +32,16 @@ import org.xevrae.aiservice.AiClient
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-internal class CommonRepositoryImpl(
+import android.content.Context
+
+class CommonRepositoryImpl(
     private val coroutineScope: CoroutineScope,
     private val database: MusicDatabase,
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
     private val spotify: Spotify,
     private val aiClient: AiClient,
+    private val context: Context,
 ) : CommonRepository {
     @OptIn(ExperimentalTime::class)
     override fun init(
@@ -244,9 +247,8 @@ internal class CommonRepositoryImpl(
         database.close()
     }
 
-    override fun getDatabasePath() =
-        com.xevrae.data.db
-            .getDatabasePath()
+    override fun getDatabasePath(): String =
+        context.getDatabasePath(com.xevrae.common.DB_NAME).path
 
     override suspend fun databaseDaoCheckpoint() = localDataSource.checkpoint()
 

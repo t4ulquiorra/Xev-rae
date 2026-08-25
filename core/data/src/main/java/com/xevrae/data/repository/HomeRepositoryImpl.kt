@@ -43,7 +43,7 @@ private data class MoodArtwork(
 private const val MOOD_ARTWORK_TTL_MILLIS = 7L * 24 * 60 * 60 * 1000
 
 @OptIn(ExperimentalTime::class)
-internal class HomeRepositoryImpl(
+class HomeRepositoryImpl(
     private val dataStoreManager: DataStoreManager,
     private val youTube: YouTube,
 ) : HomeRepository {

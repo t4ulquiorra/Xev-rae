@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
-internal class UpdateRepositoryImpl(
+class UpdateRepositoryImpl(
     private val youTube: YouTube,
 ) : UpdateRepository {
     override fun checkForGithubReleaseUpdate(): Flow<Resource<UpdateData>> =

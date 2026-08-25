@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "AccountRepositoryImpl"
 
-internal class AccountRepositoryImpl(
+class AccountRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
 ) : AccountRepository {

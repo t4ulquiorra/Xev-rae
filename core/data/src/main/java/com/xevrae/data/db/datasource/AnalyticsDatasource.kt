@@ -6,7 +6,7 @@ import com.xevrae.domain.extension.beforeXDays
 import com.xevrae.domain.extension.now
 import kotlinx.datetime.LocalDateTime
 
-internal class AnalyticsDatasource(
+class AnalyticsDatasource(
     private val databaseDao: DatabaseDao,
 ) {
     suspend fun insertPlaybackEvent(

@@ -16,7 +16,7 @@ import kotlinx.datetime.LocalDateTime
 
 private const val TAG = "AnalyticsRepositoryImpl"
 
-internal class AnalyticsRepositoryImpl(
+class AnalyticsRepositoryImpl(
     private val analyticsDatasource: AnalyticsDatasource,
 ) : AnalyticsRepository {
     override suspend fun insertPlaybackEvent(

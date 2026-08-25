@@ -37,7 +37,7 @@ import kotlinx.datetime.LocalDateTime
 
 private const val TAG = "SongRepositoryImpl"
 
-internal class SongRepositoryImpl(
+class SongRepositoryImpl(
     private val dataStoreManager: DataStoreManager,
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,

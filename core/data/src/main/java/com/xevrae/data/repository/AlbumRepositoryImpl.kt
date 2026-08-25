@@ -22,7 +22,7 @@ import kotlinx.datetime.LocalDateTime
 
 private const val TAG = "AlbumRepositoryImpl"
 
-internal class AlbumRepositoryImpl(
+class AlbumRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
 ) : AlbumRepository {
