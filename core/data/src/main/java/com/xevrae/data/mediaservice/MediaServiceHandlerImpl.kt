@@ -111,14 +111,14 @@ class MediaServiceHandlerImpl(
     private var discordRPC: DiscordRPC? = null
     override var onUpdateNotification: (List<GenericCommandButton>) -> Unit = {}
     override var showToast: (ToastType) -> Unit = { type ->
-        val context = ContextHolder.get() ?: com.xevrae.ui.AppGlobalContext.get()
-        if (context != null) {
-            val msg = when (type) {
+        val ctx = ContextHolder.get()
+        if (ctx != null) {
+            val msg: String = when (type) {
                 is ToastType.ExplicitContent -> "Explicit content is blocked"
                 is ToastType.PlayerError -> "Playback error: ${type.error}"
             }
             android.os.Handler(android.os.Looper.getMainLooper()).post {
-                android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(ctx, msg as CharSequence, android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }
