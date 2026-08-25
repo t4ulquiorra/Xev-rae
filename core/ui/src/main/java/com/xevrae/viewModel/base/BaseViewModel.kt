@@ -6,25 +6,22 @@ import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
 import com.xevrae.domain.mediaservice.handler.QueueData
 import com.xevrae.logger.LogLevel
 import com.xevrae.logger.Logger
+import com.xevrae.ui.AppGlobalContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
-import xevrae.composeapp.generated.resources.StringResource
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import xevrae.composeapp.generated.resources.Res
+import xevrae.composeapp.generated.resources.StringResource
 import xevrae.composeapp.generated.resources.loading
 
-abstract class BaseViewModel :
-    ViewModel(),
-    KoinComponent {
-    protected val mediaPlayerHandler: MediaPlayerHandler by inject<MediaPlayerHandler>()
+abstract class BaseViewModel(
+    protected val mediaPlayerHandler: MediaPlayerHandler,
+) : ViewModel() {
     private val _nowPlayingVideoId: MutableStateFlow<String> = MutableStateFlow("")
 
     /**
@@ -75,10 +72,7 @@ abstract class BaseViewModel :
     }
 
     protected fun getString(resId: StringResource): String =
-        runBlocking {
-            org.jetbrains.compose.resources
-                .getString(resId)
-        }
+        AppGlobalContext.get()?.getString(resId) ?: ""
 
     // Loading dialog
     private val _showLoadingDialog: MutableStateFlow<Pair<Boolean, String>> = MutableStateFlow(false to getString(Res.string.loading))
