@@ -162,23 +162,18 @@ fun SpotifyLoginScreen(
                 },
             ) { url ->
                 val cookie = cookieManager.getCookie(url)
-                cookie.takeIf {
-                    it.isNotEmpty()
-                }?.let { cookie ->
-                    val cookies =
-                        cookie.split("; ").map {
-                            val (key, value) = it.split("=")
-                            key to value
+                if (cookie.isNotEmpty()) {
+                    val cookies: List<Pair<String, String>> =
+                        cookie.split("; ").mapNotNull {
+                            val parts = it.split("=")
+                            if (parts.size >= 2) parts[0] to parts.subList(1, parts.size).joinToString("=") else null
                         }
                     viewModel.setFullSpotifyCookies(cookies)
                 }
                 if (Regex("^https://accounts\\.spotify\\.com/[a-z]{2}(-[a-zA-Z]{2})?/status$").matches(url)) {
-                    cookie
-                        .takeIf {
-                            it.isNotEmpty()
-                        }?.let {
-                            viewModel.saveSpotifySpdc(it)
-                        }
+                    if (cookie.isNotEmpty()) {
+                        viewModel.saveSpotifySpdc(cookie)
+                    }
                     cookieManager.removeAllCookies()
                 }
             }

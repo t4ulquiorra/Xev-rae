@@ -11,18 +11,27 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+
+class WebViewState(val initialUrl: String = "")
+
+interface WebViewCookieManager {
+    fun getCookie(url: String): String
+    fun removeAllCookies()
+}
+
+@Composable
+fun rememberWebViewState(url: String = ""): MutableState<WebViewState> =
+    remember { mutableStateOf(WebViewState(url)) }
 
 fun createWebViewCookieManager(): WebViewCookieManager =
     object : WebViewCookieManager {
         override fun getCookie(url: String): String {
             val cookie = CookieManager.getInstance()
-            return if (cookie.hasCookies()) {
-                cookie.getCookie(url)
-            } else {
-                ""
-            }
+            return cookie.getCookie(url) ?: ""
         }
 
         override fun removeAllCookies() {
@@ -74,49 +83,54 @@ fun PlatformWebView(
 fun DiscordWebView(
     state: MutableState<WebViewState>,
     aboveContent: @Composable (BoxScope.() -> Unit),
-    onLoginDone: (String) -> Unit
+    onLoginDone: (String) -> Unit,
 ) {
     val url = "https://discord.com/login"
     Box {
-        AndroidView(factory = {
-            WebView(it).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                webViewClient = object : WebViewClient() {
-
-                    @Deprecated("Deprecated in Java")
-                    override fun shouldOverrideUrlLoading(
-                        webView: WebView,
-                        url: String,
-                    ): Boolean {
-                        stopLoading()
-                        if (url.endsWith("/app")) {
-                            loadUrl(JS_SNIPPET)
+        AndroidView(
+            factory = {
+                WebView(it).apply {
+                    layoutParams =
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                        )
+                    webViewClient =
+                        object : WebViewClient() {
+                            @Deprecated("Deprecated in Java")
+                            override fun shouldOverrideUrlLoading(
+                                webView: WebView,
+                                url: String,
+                            ): Boolean {
+                                stopLoading()
+                                if (url.endsWith("/app")) {
+                                    loadUrl(JS_SNIPPET)
+                                }
+                                return false
+                            }
                         }
-                        return false
-                    }
-                }
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
 
-                if (android.os.Build.MANUFACTURER.equals(MOTOROLA, ignoreCase = true)) {
-                    settings.userAgentString = SAMSUNG_USER_AGENT
-                }
-                webChromeClient = object : WebChromeClient() {
-                    override fun onJsAlert(
-                        view: WebView,
-                        url: String,
-                        message: String,
-                        result: JsResult,
-                    ): Boolean {
-                        onLoginDone(message)
-                        return true
+                    if (android.os.Build.MANUFACTURER.equals(MOTOROLA, ignoreCase = true)) {
+                        settings.userAgentString = SAMSUNG_USER_AGENT
                     }
+                    webChromeClient =
+                        object : WebChromeClient() {
+                            override fun onJsAlert(
+                                view: WebView,
+                                url: String,
+                                message: String,
+                                result: JsResult,
+                            ): Boolean {
+                                onLoginDone(message)
+                                return true
+                            }
+                        }
+                    loadUrl(url)
                 }
-                loadUrl(url)
-            }
-        })
+            },
+        )
         aboveContent()
     }
 }

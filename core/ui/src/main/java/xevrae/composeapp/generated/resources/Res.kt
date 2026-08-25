@@ -13,7 +13,18 @@ object Res {
     object string
     object drawable
     object font
+
+    fun readBytes(path: String): ByteArray {
+        val context = AppGlobalContext.get() ?: return ByteArray(0)
+        return try {
+            context.assets.open(path).use { it.readBytes() }
+        } catch (_: Exception) {
+            ByteArray(0)
+        }
+    }
 }
+
+fun readBytes(path: String): ByteArray = Res.readBytes(path)
 
 @Composable
 fun stringResource(id: Int): String = androidx.compose.ui.res.stringResource(id)

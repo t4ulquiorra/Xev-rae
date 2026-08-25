@@ -137,16 +137,15 @@ fun LoginScreen(
                 Logger.d("LogInScreen", "Current URL: $url")
                 if (url == Config.YOUTUBE_MUSIC_MAIN_URL) {
                     coroutineScope.launch {
-                        val success =
-                            createWebViewCookieManager()
-                                .getCookie(url)
-                                .takeIf {
-                                    it.isNotEmpty()
-                                }?.let {
-                                    settingsViewModel.addAccount(it)
-                                } ?: false
-
-                        createWebViewCookieManager().removeAllCookies()
+                        val cookieManager = createWebViewCookieManager()
+                        val cookie = cookieManager.getCookie(url)
+                        val success = if (cookie.isNotEmpty()) {
+                            settingsViewModel.addAccount(cookie)
+                            true
+                        } else {
+                            false
+                        }
+                        cookieManager.removeAllCookies()
 
                         if (success) {
                             viewModel.makeToast(getString(Res.string.login_success))

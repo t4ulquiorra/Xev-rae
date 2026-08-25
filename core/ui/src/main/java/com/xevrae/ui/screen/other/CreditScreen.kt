@@ -46,6 +46,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
+import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
