@@ -1,7 +1,7 @@
 package com.xevrae.expect
 
 import android.content.res.Configuration
-import xevrae.composeapp.generated.resources.AppGlobalContext
+import com.xevrae.ui.AppGlobalContext
 
 enum class Orientation {
     PORTRAIT, LANDSCAPE, UNSPECIFIED
