@@ -1,16 +1,6 @@
 package com.xevrae.kotlinytmusicscraper
 
 import com.xevrae.domain.extension.now
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import io.ktor.client.plugins.compression.gzip
-import io.ktor.client.plugins.compression.deflate
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.protobuf.protobuf
-import io.ktor.serialization.kotlinx.xml.xml
-import io.ktor.http.ContentType
-import nl.adaptivity.xmlutil.serialization.XML
-import nl.adaptivity.xmlutil.XmlDeclMode
 import com.xevrae.kotlinytmusicscraper.extractor.Extractor
 import com.xevrae.kotlinytmusicscraper.models.Context
 import com.xevrae.kotlinytmusicscraper.models.SongItem
@@ -41,6 +31,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyConfig
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.compression.ContentEncoding
+import io.ktor.client.plugins.compression.gzip
+import io.ktor.client.plugins.compression.deflate
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
