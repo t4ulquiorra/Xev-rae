@@ -95,8 +95,8 @@ dependencies {
     implementation(projects.core.media)
 
     // Flavor specific dependencies
-    "fullImplementation"(projects.core.crashlytics)
-    "fossImplementation"(projects.core.`crashlytics-noop`)
+    "fullImplementation"(project(":core:crashlytics"))
+    "fossImplementation"(project(":core:crashlytics-noop"))
 
     // Hilt DI
     implementation(libs.hilt.android)
