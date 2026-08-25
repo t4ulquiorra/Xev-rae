@@ -53,7 +53,7 @@ fun MediaPlayerViewWithSubtitle(
         lyricsData = lyricsData,
         translatedLyricsData = translatedLyricsData,
         context = LocalContext.current,
-        activity = LocalActivity.current as? ComponentActivity ?: LocalContext.current.findActivity(),
+        activity = (LocalContext.current as? ComponentActivity) ?: LocalContext.current.findActivity(),
         isInPipMode = isInPipMode,
         mainTextStyle = mainTextStyle,
         translatedTextStyle = translatedTextStyle,

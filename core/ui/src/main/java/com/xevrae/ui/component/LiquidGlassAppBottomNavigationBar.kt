@@ -112,7 +112,7 @@ private const val TAG = "LiquidGlassAppBottomNavigationBar"
 
 @Composable
 fun LiquidGlassAppBottomNavigationBar(
-    startDestination: Any,
+    startDestination: Any = HomeDestination,
     navController: NavController,
     backdrop: PlatformBackdrop,
     viewModel: SharedViewModel,

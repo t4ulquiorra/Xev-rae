@@ -41,7 +41,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,7 +70,6 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import coil3.toUri
 import com.xevrae.domain.data.player.GenericMediaItem
 import com.xevrae.domain.manager.DataStoreManager
@@ -139,7 +137,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun App(viewModel: SharedViewModel = hiltViewModel()) {
-    val windowSize = currentWindowAdaptiveInfo().windowSizeClass
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val navController = rememberNavController()
 
     val sleepTimerState by viewModel.sleepTimerState.collectAsStateWithLifecycle()
@@ -339,9 +337,9 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
     var isScrolledToTop by rememberSaveable {
         mutableStateOf(false)
     }
-    val isTablet = windowSize.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)
-    val isTabletLandscape = isTablet && currentOrientation() == Orientation.LANDSCAPE && (androidx.compose.ui.platform.LocalConfiguration.current.let { it.screenWidthDp.toFloat() / it.screenHeightDp.toFloat() } >= 1.1f)
-    val screenWidthDp = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
+    val isTablet = configuration.screenWidthDp >= 600
+    val isTabletLandscape = isTablet && currentOrientation() == Orientation.LANDSCAPE && (configuration.screenWidthDp.toFloat() / configuration.screenHeightDp.toFloat() >= 1.1f)
+    val screenWidthDp = configuration.screenWidthDp.dp
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
     val leftPanelProgress = remember { androidx.compose.animation.core.Animatable(if (isShowLeftPanel) 1f else 0f) }
