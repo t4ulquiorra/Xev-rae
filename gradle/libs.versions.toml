@@ -143,6 +143,7 @@ ktor-serialization-kotlinx-protobuf = { group = "io.ktor", name = "ktor-serializ
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization-json" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
