@@ -1326,15 +1326,21 @@ internal class CrossfadeExoPlayerAdapter(
                         return
                     }
 
-                    // Retry for source errors (expired/invalid stream URL)
-                    // ERROR_CODE_PARSING_CONTAINER_MALFORMED (3001) = server returned non-media response (e.g. HTML error page)
-                    // ERROR_CODE_IO_BAD_HTTP_STATUS (2004) = HTTP 403/410 from expired URL
-                    // ERROR_CODE_IO_NETWORK_CONNECTION_FAILED (2001) = connection refused
+                    // Retry for source errors (expired/invalid stream URL), network dropouts, IO errors, or cache eviction
                     val isRetryableSourceError =
-                        error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED ||
-                            error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+                        error.errorCode in 2000..3999 ||
+                            error.errorCode == PlaybackException.ERROR_CODE_TIMEOUT ||
+                            error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW ||
+                            error.errorCode == PlaybackException.ERROR_CODE_REMOTE_ERROR
 
                     val currentVideoId = playlist.getOrNull(localCurrentMediaItemIndex)?.mediaId
+                    if (error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND) {
+                        Logger.w(
+                            TAG,
+                            "Cache disappeared mid-read for $currentVideoId — the resolver had served it " +
+                                "as a fully cached bare media id. Retrying to resolve a real URL.",
+                        )
+                    }
                     if (isRetryableSourceError && currentVideoId != null) {
                         // Reset retry count if this is a different track
                         if (retryVideoId != currentVideoId) {
@@ -1344,6 +1350,12 @@ internal class CrossfadeExoPlayerAdapter(
                         if (retryCount < maxRetryCount) {
                             retryCount++
                             Logger.w(TAG, "Retryable source error (attempt $retryCount/$maxRetryCount) for $currentVideoId: ${error.errorCodeName}")
+                            // Snapshot the current position so the retry resumes where playback
+                            // failed instead of restarting the track from the beginning.
+                            val resumePositionMs = cachedPosition.coerceAtLeast(0L)
+                            // Notify UI that buffering/recovery is in progress
+                            listeners.forEach { it.onIsLoadingChanged(true) }
+                            transitionToState(InternalState.BUFFERING)
                             coroutineScope.launch {
                                 try {
                                     // Invalidate cached format so ResolvingDataSource fetches a fresh URL
@@ -1353,8 +1365,8 @@ internal class CrossfadeExoPlayerAdapter(
                                     StreamUrlCache.remove("${com.xevrae.common.MERGING_DATA_TYPE.VIDEO}$currentVideoId")
                                     // Evict from precache (it may hold a stale player)
                                     precachedPlayers.remove(currentVideoId)?.player?.release()
-                                    // Reload the track
-                                    loadAndPlayTrackInternal(localCurrentMediaItemIndex, 0L, shouldPlay = true)
+                                    // Reload the track at the saved position
+                                    loadAndPlayTrackInternal(localCurrentMediaItemIndex, resumePositionMs, shouldPlay = true)
                                 } catch (e: Exception) {
                                     if (e is CancellationException) throw e
                                     Logger.e(TAG, "Retry failed: ${e.message}", e)
@@ -1370,11 +1382,7 @@ internal class CrossfadeExoPlayerAdapter(
                 }
 
                 override fun onIsLoadingChanged(isLoading: Boolean) {
-                    // ExoPlayer reports isLoading=true during normal background buffer refill,
-                    // not just when playback is stalled. Only propagate loading=true when
-                    // playback is actually stalled (STATE_BUFFERING), otherwise the UI
-                    // would show a buffering indicator continuously during normal playback.
-                    val isPlaybackStalled = isLoading && player.playbackState == Player.STATE_BUFFERING
+                    val isPlaybackStalled = isLoading && player.playbackState == Player.STATE_BUFFERING && player.playWhenReady
                     val isCurrentPlayer = player == currentPlayer
                     Logger.d(TAG, "onIsLoadingChanged: isLoading=$isLoading, isPlaybackStalled=$isPlaybackStalled, isCurrentPlayer=$isCurrentPlayer")
                     if (cachedIsLoading != isPlaybackStalled && isCurrentPlayer) {

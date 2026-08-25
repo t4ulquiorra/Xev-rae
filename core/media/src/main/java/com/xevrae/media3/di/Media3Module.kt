@@ -63,6 +63,7 @@ import com.xevrae.domain.repository.SongRepository
 import com.xevrae.domain.repository.StreamRepository
 import com.xevrae.logger.Logger
 import com.xevrae.media3.cache.StreamUrlCache
+import com.xevrae.media3.extension.isFullyCached
 import com.xevrae.media3.exoplayer.CrossfadeExoPlayerAdapter
 import com.xevrae.media3.repository.CacheRepositoryImpl
 import com.xevrae.media3.service.SimpleMediaService
@@ -331,49 +332,35 @@ private fun provideResolvingDataSourceFactory(
         val mediaId = dataSpec.key ?: error("No media id")
         Logger.w("Stream", mediaId)
         Logger.w("Stream", mediaId.startsWith(MERGING_DATA_TYPE.VIDEO).toString())
-
-        // Fast path: in-memory URL cache (avoids DB round-trip)
-        StreamUrlCache.get(mediaId)?.let { cachedUrl ->
-            Logger.w("Stream", "In-memory cache hit for $mediaId")
-            coroutineScope.launch(Dispatchers.IO) {
-                streamRepository.updateFormat(
-                    if (mediaId.contains(MERGING_DATA_TYPE.VIDEO)) mediaId.removePrefix(MERGING_DATA_TYPE.VIDEO) else mediaId
-                )
-            }
-            return@Factory dataSpec.withUri(cachedUrl.toUri()).subrange(dataSpec.uriPositionOffset, 10 * 512 * 1024L)
-        }
-
-        val length = if (dataSpec.length >= 0) dataSpec.length else 1
-        if (downloadCache.isCached(
-                mediaId,
-                dataSpec.position,
-                length,
-            )
-        ) {
-            coroutineScope.launch(Dispatchers.IO) {
-                streamRepository.updateFormat(
-                    if (mediaId.contains(MERGING_DATA_TYPE.VIDEO)) {
-                        mediaId.removePrefix(MERGING_DATA_TYPE.VIDEO)
-                    } else {
-                        mediaId
-                    },
-                )
+        if (downloadCache.isFullyCached(mediaId, dataSpec.position)) {
+            if (dataSpec.position == 0L) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    streamRepository.updateFormat(
+                        if (mediaId.contains(MERGING_DATA_TYPE.VIDEO)) {
+                            mediaId.removePrefix(MERGING_DATA_TYPE.VIDEO)
+                        } else {
+                            mediaId
+                        },
+                    )
+                }
             }
             Logger.w("Stream", "Downloaded $mediaId")
-            return@Factory dataSpec
+            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
         }
-        val playerCached = playerCache.isCached(mediaId, dataSpec.position, chunkLength)
-        if (playerCached) {
-            coroutineScope.launch(Dispatchers.IO) {
-                streamRepository.updateFormat(
-                    if (mediaId.contains(MERGING_DATA_TYPE.VIDEO)) {
-                        mediaId.removePrefix(MERGING_DATA_TYPE.VIDEO)
-                    } else {
-                        mediaId
-                    },
-                )
+        if (playerCache.isFullyCached(mediaId, dataSpec.position)) {
+            if (dataSpec.position == 0L) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    streamRepository.updateFormat(
+                        if (mediaId.contains(MERGING_DATA_TYPE.VIDEO)) {
+                            mediaId.removePrefix(MERGING_DATA_TYPE.VIDEO)
+                        } else {
+                            mediaId
+                        },
+                    )
+                }
             }
             Logger.w("Stream", "Cached $mediaId")
+            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
         }
         var dataSpecReturn: DataSpec = dataSpec
         var resolved = false
@@ -389,7 +376,6 @@ private fun provideResolvingDataSourceFactory(
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
                             dataSpecReturn = dataSpec.withUri(videoUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
-                            StreamUrlCache.put(mediaId, videoUrl, System.currentTimeMillis() + 55 * 60 * 1000L)
                             resolved = true
                             return@runBlocking
                         }
@@ -406,7 +392,6 @@ private fun provideResolvingDataSourceFactory(
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Video")
                         dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
-                        StreamUrlCache.put(mediaId, it, System.currentTimeMillis() + 55 * 60 * 1000L)
                         resolved = true
                     }
             } else {
@@ -419,7 +404,6 @@ private fun provideResolvingDataSourceFactory(
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
                             dataSpecReturn = dataSpec.withUri(audioUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
-                            StreamUrlCache.put(mediaId, audioUrl, System.currentTimeMillis() + 55 * 60 * 1000L)
                             resolved = true
                             return@runBlocking
                         }
@@ -436,7 +420,6 @@ private fun provideResolvingDataSourceFactory(
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Audio")
                         dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
-                        StreamUrlCache.put(mediaId, it, System.currentTimeMillis() + 55 * 60 * 1000L)
                         resolved = true
                     }
             }

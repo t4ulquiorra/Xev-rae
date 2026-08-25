@@ -6,6 +6,8 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.session.CommandButton
 import androidx.media3.session.SessionCommand
 import com.xevrae.common.MEDIA_CUSTOM_COMMAND
@@ -193,3 +195,12 @@ fun GenericCommandButton.toCommandButton(context: Context): CommandButton =
                 ).build()
         }
     }
+
+@UnstableApi
+internal fun Cache.isFullyCached(
+    key: String,
+    position: Long,
+): Boolean {
+    val total = ContentMetadata.getContentLength(getContentMetadata(key))
+    return total > 0L && position < total && isCached(key, 0L, total)
+}

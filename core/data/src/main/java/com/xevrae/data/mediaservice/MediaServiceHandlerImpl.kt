@@ -110,7 +110,18 @@ class MediaServiceHandlerImpl(
 
     private var discordRPC: DiscordRPC? = null
     override var onUpdateNotification: (List<GenericCommandButton>) -> Unit = {}
-    override var showToast: (ToastType) -> Unit = {}
+    override var showToast: (ToastType) -> Unit = { type ->
+        val context = ContextHolder.get() ?: com.xevrae.ui.AppGlobalContext.get()
+        if (context != null) {
+            val msg = when (type) {
+                is ToastType.ExplicitContent -> "Explicit content is blocked"
+                is ToastType.PlayerError -> "Playback error: ${type.error}"
+            }
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     override var pushPlayerError: (PlayerError) -> Unit = {}
     private val _simpleMediaState = MutableStateFlow<SimpleMediaState>(SimpleMediaState.Initial)
     override val simpleMediaState: StateFlow<SimpleMediaState> = _simpleMediaState.asStateFlow()
@@ -2327,22 +2338,14 @@ class MediaServiceHandlerImpl(
         when (error.errorCode) {
             PlayerConstants.ERROR_CODE_TIMEOUT -> {
                 Logger.e("Player Error", "onPlayerError (${error.errorCode}): ${error.message}")
-                if (isAppInForeground()) {
-                    showToast(ToastType.PlayerError(error.errorCodeName))
-                } else {
-                    Logger.w("Player Error", "App is not in foreground, skipping toast")
-                }
+                showToast(ToastType.PlayerError(error.errorCodeName))
                 player.pause()
             }
 
             else -> {
                 Logger.e("Player Error", "onPlayerError (${error.errorCode}): ${error.message}")
                 pushPlayerError(error)
-                if (isAppInForeground()) {
-                    showToast(ToastType.PlayerError(error.errorCodeName))
-                } else {
-                    Logger.w("Player Error", "App is not in foreground, skipping toast")
-                }
+                showToast(ToastType.PlayerError(error.errorCodeName))
                 player.pause()
             }
         }
