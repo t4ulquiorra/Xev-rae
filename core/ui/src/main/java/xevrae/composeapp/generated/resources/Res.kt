@@ -60,8 +60,6 @@ val Res.font.nunito: Int get() = R.font.nunito
 val nunito: Int get() = R.font.nunito
 
 // Strings
-val Res.string.Downloaded: Int get() = R.string.Downloaded
-val Downloaded: Int get() = R.string.Downloaded
 val Res.string.Song_and_artist_name: Int get() = R.string.Song_and_artist_name
 val Song_and_artist_name: Int get() = R.string.Song_and_artist_name
 val Res.string._dev: Int get() = R.string._dev
