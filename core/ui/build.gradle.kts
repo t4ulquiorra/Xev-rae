@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.markdown)
     implementation(libs.haze)
-    implementation(libs.haze.material)
+    implementation(libs.haze.materials)
     implementation(libs.liquid.glass)
     implementation(libs.liquid.glass.shapes)
 
