@@ -321,8 +321,53 @@ enum class GradientAngle {
     CW315,
 }
 
+fun android.content.Context.getActivityOrNull(): android.app.Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
+}
+
+fun android.content.Context.findActivity(): androidx.activity.ComponentActivity {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is androidx.activity.ComponentActivity) return context
+        context = context.baseContext
+    }
+    throw IllegalStateException("Context is not a ComponentActivity")
+}
+
+@Suppress("DEPRECATION")
 @Composable
-fun getScreenSizeInfo(): ScreenSizeInfo
+fun getScreenSizeInfo(): ScreenSizeInfo {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val activity = context.getActivityOrNull()
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val localDensity = androidx.compose.ui.platform.LocalDensity.current
+
+    return remember(configuration) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            val windowMetrics = activity?.windowManager?.currentWindowMetrics
+            ScreenSizeInfo(
+                hDP = with(localDensity) { (windowMetrics?.bounds?.height())?.toDp()?.value?.toInt() ?: 0 },
+                wDP = with(localDensity) { (windowMetrics?.bounds?.width())?.toDp()?.value?.toInt() ?: 0 },
+                hPX = windowMetrics?.bounds?.height() ?: 0,
+                wPX = windowMetrics?.bounds?.width() ?: 0,
+            )
+        } else {
+            val point = android.graphics.Point()
+            activity?.windowManager?.defaultDisplay?.getRealSize(point)
+            ScreenSizeInfo(
+                hDP = with(localDensity) { point.y.toDp().value.toInt() },
+                wDP = with(localDensity) { point.x.toDp().value.toInt() },
+                hPX = point.y,
+                wPX = point.x,
+            )
+        }
+    }
+}
 
 @Composable
 fun NonLazyGrid(
@@ -378,7 +423,15 @@ fun LazyListState.animateScrollAndCentralizeItem(
 }
 
 @Composable
-fun KeepScreenOn()
+fun KeepScreenOn() {
+    val currentView = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        currentView.keepScreenOn = true
+        onDispose {
+            currentView.keepScreenOn = false
+        }
+    }
+}
 
 @Composable
 fun LazyListState.isScrollingUp(): State<Boolean> {
@@ -566,7 +619,19 @@ fun TextStyle.greyScale(): TextStyle =
     )
 
 @Composable
-fun rememberIsInPipMode(): Boolean
+fun rememberIsInPipMode(): Boolean {
+    val activity = androidx.compose.ui.platform.LocalContext.current.findActivity()
+    var pipMode by remember { mutableStateOf(activity.isInPictureInPictureMode) }
+    androidx.compose.runtime.DisposableEffect(activity) {
+        val observer =
+            androidx.core.util.Consumer<androidx.core.app.PictureInPictureModeChangedInfo> { info ->
+                pipMode = info.isInPictureInPictureMode
+            }
+        activity.addOnPictureInPictureModeChangedListener(observer)
+        onDispose { activity.removeOnPictureInPictureModeChangedListener(observer) }
+    }
+    return pipMode
+}
 
 @Composable
 fun animateAlignmentAsState(targetAlignment: Alignment): State<Alignment> {

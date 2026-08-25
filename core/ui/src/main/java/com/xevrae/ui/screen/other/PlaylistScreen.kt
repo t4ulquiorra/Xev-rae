@@ -1192,7 +1192,7 @@ fun PlaylistScreen(
                                         .padding(horizontal = 12.dp)
                                         .weight(1f),
                                 colors =
-                                    SearchBarDefaults.colors().copy(
+                                    SearchBarDefaults.colors(
                                         containerColor = Color.Transparent,
                                     ),
                                 inputField = {

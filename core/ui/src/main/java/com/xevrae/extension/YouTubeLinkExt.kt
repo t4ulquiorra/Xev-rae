@@ -1,6 +1,6 @@
 package com.xevrae.extension
 
-import com.eygraber.uri.Uri
+import android.net.Uri
 
 private const val APP_SCHEME = "xevrae"
 

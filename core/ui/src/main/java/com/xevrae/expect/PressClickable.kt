@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 
 fun Modifier.pressClickable(
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ): Modifier = composed {
     val scale = remember { Animatable(1f) }
@@ -39,7 +39,7 @@ fun Modifier.pressClickable(
 }
 
 fun Modifier.lightPressClickable(
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ): Modifier = composed {
     val scale = remember { Animatable(1f) }

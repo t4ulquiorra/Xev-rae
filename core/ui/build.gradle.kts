@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.liquid.glass.shapes)
 
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
     implementation(libs.core.ktx)
     implementation(libs.appcompat)

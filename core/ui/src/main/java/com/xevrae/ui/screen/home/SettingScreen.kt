@@ -90,7 +90,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.eygraber.uri.toKmpUri
 import com.xevrae.common.LIMIT_CACHE_SIZE
 import com.xevrae.common.QUALITY
 import com.xevrae.common.SUPPORTED_LANGUAGE
@@ -382,7 +381,7 @@ fun SettingScreen(
             "application/octet-stream",
         ) { uri ->
             uri?.let {
-                viewModel.backup(it.toKmpUri())
+                viewModel.backup(it)
             }
         }
 
@@ -392,7 +391,7 @@ fun SettingScreen(
                 FilePickerFileType.All,
             selectionMode = FilePickerSelectionMode.Single,
         ) { file ->
-            file.firstOrNull()?.getPath(pl)?.toKmpUri()?.let {
+            file.firstOrNull()?.uri?.let {
                 viewModel.restore(it)
             }
         }
