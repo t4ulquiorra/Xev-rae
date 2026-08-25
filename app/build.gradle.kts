@@ -136,3 +136,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.work:work-runtime:2.10.0")
+        force("androidx.work:work-runtime-ktx:2.10.0")
+    }
+}

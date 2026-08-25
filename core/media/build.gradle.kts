@@ -39,3 +39,10 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization.json)
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.work:work-runtime:2.10.0")
+        force("androidx.work:work-runtime-ktx:2.10.0")
+    }
+}
