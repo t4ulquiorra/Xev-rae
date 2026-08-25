@@ -210,7 +210,7 @@ fun HomeScreen(
     viewModel: HomeViewModel =
         hiltViewModel(),
     sharedViewModel: SharedViewModel =
-        hiltInject(),
+        hiltViewModel(),
     navController: NavController,
 ) {
     val coroutineScope = rememberCoroutineScope()

@@ -295,7 +295,7 @@ const val END_OF_SONG_SENTINEL = Int.MAX_VALUE
 @Composable
 fun InfoPlayerBottomSheet(
     onDismiss: () -> Unit,
-    sharedViewModel: SharedViewModel = hiltInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val coroutineScope = rememberCoroutineScope()
     val localDensity = LocalDensity.current
@@ -906,7 +906,7 @@ fun InfoPlayerBottomSheet(
 @Composable
 fun QueueBottomSheet(
     onDismiss: () -> Unit,
-    sharedViewModel: SharedViewModel = hiltInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     musicServiceHandler: MediaPlayerHandler = hiltInject<MediaPlayerHandler>(),
     dataStoreManager: DataStoreManager = hiltInject(),
 ) {

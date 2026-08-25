@@ -156,7 +156,7 @@ import xevrae.composeapp.generated.resources.videos
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SearchScreen(
-    searchViewModel: SearchViewModel = hiltInject(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
 ) {

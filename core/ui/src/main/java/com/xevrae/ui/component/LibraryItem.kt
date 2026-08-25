@@ -89,7 +89,7 @@ import com.xevrae.domain.mediaservice.handler.PlaylistType as DomainPlaylistType
 fun LibraryItem(
     state: LibraryItemState,
     viewModel: LibraryViewModel = hiltViewModel(),
-    sharedViewModel: SharedViewModel = hiltInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
