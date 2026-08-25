@@ -31,8 +31,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyConfig
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.client.plugins.compression.gzip
-import io.ktor.client.plugins.compression.deflate
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
