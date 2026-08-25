@@ -1838,7 +1838,7 @@ suspend fun restoreNative(
     }
 
     withContext(Dispatchers.Main) {
-        multiplatform.network.cmptoast.showToast(AppGlobalContext.get()?.getString(xevrae.composeapp.generated.resources.Res.string.restore_success) ?: "", multiplatform.network.cmptoast.ToastGravity.Bottom)
+        multiplatform.network.cmptoast.showToast(AppGlobalContext.get()?.getString(xevrae.composeapp.generated.resources.restore_success) ?: "", multiplatform.network.cmptoast.ToastGravity.Bottom)
         com.xevrae.media3.di.stopService(application)
         getData()
         val ctx = application.applicationContext

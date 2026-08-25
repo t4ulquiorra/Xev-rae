@@ -161,6 +161,7 @@ class AnalyticsViewModel @Inject constructor(
                         AnalyticsUiState.DayRange.LAST_7_DAYS -> 7
                         AnalyticsUiState.DayRange.LAST_30_DAYS -> 30
                         AnalyticsUiState.DayRange.LAST_90_DAYS -> 90
+                        AnalyticsUiState.DayRange.THIS_YEAR -> 365
                     }
                 analyticsRepository.queryTopPlayedSongsLastXDays(x).collect { topPlayedTracks ->
                     topPlayedTracks
@@ -215,6 +216,7 @@ class AnalyticsViewModel @Inject constructor(
                         AnalyticsUiState.DayRange.LAST_7_DAYS -> 7
                         AnalyticsUiState.DayRange.LAST_30_DAYS -> 30
                         AnalyticsUiState.DayRange.LAST_90_DAYS -> 90
+                        AnalyticsUiState.DayRange.THIS_YEAR -> 365
                     }
                 analyticsRepository.queryTopArtistsLastXDays(x).collect { topPlayedArtists ->
                     topPlayedArtists
@@ -288,6 +290,7 @@ class AnalyticsViewModel @Inject constructor(
                         AnalyticsUiState.DayRange.LAST_7_DAYS -> 7
                         AnalyticsUiState.DayRange.LAST_30_DAYS -> 30
                         AnalyticsUiState.DayRange.LAST_90_DAYS -> 90
+                        AnalyticsUiState.DayRange.THIS_YEAR -> 365
                     }
                 analyticsRepository.queryTopAlbumsLastXDays(x).collect { topPlayedAlbums ->
                     topPlayedAlbums

@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import xevrae.composeapp.generated.resources.Res
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler

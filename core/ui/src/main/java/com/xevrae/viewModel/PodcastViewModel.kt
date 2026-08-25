@@ -64,6 +64,8 @@ sealed class PodcastUIEvent {
     data class Share(
         val podcastId: String,
     ) : PodcastUIEvent()
+}
+
 @HiltViewModel
 class PodcastViewModel @Inject constructor(
     mediaPlayerHandler: MediaPlayerHandler,

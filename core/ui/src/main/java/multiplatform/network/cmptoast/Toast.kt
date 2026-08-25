@@ -23,3 +23,10 @@ fun showToast(
     val length = if (duration == ToastDuration.Short) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
     Toast.makeText(context, message, length).show()
 }
+
+fun showToast(
+    message: String,
+    gravity: ToastGravity,
+) {
+    showToast(message, ToastDuration.Short, gravity)
+}

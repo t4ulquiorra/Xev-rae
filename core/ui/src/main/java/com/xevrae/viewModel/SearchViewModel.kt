@@ -90,6 +90,8 @@ sealed class SearchScreenUIState {
     object Success : SearchScreenUIState()
 
     object Error : SearchScreenUIState()
+}
+
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     mediaPlayerHandler: MediaPlayerHandler,
