@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
@@ -9,6 +10,9 @@ android {
     namespace = "com.xevrae.android.media"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
+    buildFeatures {
+        compose = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -18,10 +22,19 @@ android {
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:domain"))
+
+    val composeBom = platform(libs.compose.bom)
+    implementation(composeBom)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
+
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
+    implementation(libs.activity.compose)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
+    implementation(libs.media3.ui.compose)
     api(libs.media3.session)
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.exoplayer.hls)
