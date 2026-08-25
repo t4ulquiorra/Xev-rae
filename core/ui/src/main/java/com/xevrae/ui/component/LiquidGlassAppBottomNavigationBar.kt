@@ -19,6 +19,55 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import xevrae.composeapp.generated.resources.Res
+import xevrae.composeapp.generated.resources.*
+
+sealed class BottomNavScreen(
+    val ordinal: Int,
+    val destination: Any,
+    val title: Int,
+    val icon: @Composable (selected: Boolean) -> Unit,
+) {
+    data object Home : BottomNavScreen(
+        ordinal = 0,
+        destination = HomeDestination,
+        title = Res.string.home,
+        icon = { selected ->
+            Icon(
+                painter = painterResource(if (selected) Res.drawable.home_filled else Res.drawable.home_lined),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+            )
+        },
+    )
+
+    data object Search : BottomNavScreen(
+        ordinal = 1,
+        destination = SearchDestination,
+        title = Res.string.search,
+        icon = { selected ->
+            Icon(
+                painter = painterResource(if (selected) Res.drawable.search_filled else Res.drawable.search_lined),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+            )
+        },
+    )
+
+    data object Library : BottomNavScreen(
+        ordinal = 2,
+        destination = LibraryDestination,
+        title = Res.string.library,
+        icon = { selected ->
+            Icon(
+                painter = painterResource(if (selected) Res.drawable.library_filled else Res.drawable.library_lined),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+            )
+        },
+    )
+}
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue

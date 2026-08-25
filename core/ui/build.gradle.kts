@@ -42,6 +42,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.kmpalette.core)
+    implementation(libs.kmpalette.network)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.compottie)
     implementation(libs.compottie.dot)

@@ -9,6 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.xevrae.logger.Logger
 
+interface PhotoPickerLauncher {
+    fun launch()
+}
+
 @Composable
 fun photoPickerResult(onResultUri: (String?) -> Unit): PhotoPickerLauncher {
     val context = LocalContext.current
