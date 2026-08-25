@@ -52,6 +52,9 @@ fun getString(id: Int, vararg formatArgs: Any): String {
     return context.getString(id, *formatArgs)
 }
 
+val Res.string.app_name: Int get() = R.string.app_name
+val app_name: Int get() = R.string.app_name
+
 // Font
 val Res.font.nunito: Int get() = R.font.nunito
 val nunito: Int get() = R.font.nunito

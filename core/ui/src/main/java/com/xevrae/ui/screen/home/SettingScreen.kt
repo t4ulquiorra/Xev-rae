@@ -347,7 +347,6 @@ import java.time.format.DateTimeFormatter
     ExperimentalCoilApi::class,
     ExperimentalHazeMaterialsApi::class,
     FormatStringsInDatetimeFormats::class,
-    ExperimentalCalfApi::class,
 )
 @Composable
 fun SettingScreen(
@@ -357,7 +356,6 @@ fun SettingScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val platformContext = LocalPlatformContext.current
-    val pl = com.mohamedrejeb.calf.core.LocalPlatformContext.current
     val localDensity = LocalDensity.current
     val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
@@ -386,12 +384,10 @@ fun SettingScreen(
         }
 
     val restoreLauncher =
-        rememberFilePickerLauncher(
-            type =
-                FilePickerFileType.All,
-            selectionMode = FilePickerSelectionMode.Single,
-        ) { file ->
-            file.firstOrNull()?.uri?.let {
+        filePickerResult(
+            mimeType = "*/*",
+        ) { uri ->
+            uri?.let {
                 viewModel.restore(it)
             }
         }

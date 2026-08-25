@@ -347,6 +347,8 @@ fun LibraryDynamicPlaylistScreen(
                             mostPlayed
                         }
                     }
+
+                    else -> emptyList()
                 },
                 key = { it.hashCode() },
             ) { song ->

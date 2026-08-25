@@ -14,6 +14,10 @@ import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.no_equalizer
 
+interface OpenEqLauncher {
+    fun launch()
+}
+
 @Composable
 fun openEqResult(audioSessionId: Int): OpenEqLauncher {
     val context = LocalContext.current

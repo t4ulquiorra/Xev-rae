@@ -75,15 +75,7 @@ fun LoginScreen(
 
     LaunchedEffect(state) {
         snapshotFlow { state.value }.collect {
-            Logger.d(
-                "LogInScreen",
-                "WebViewState: ${
-                    when (it) {
-                        is com.xevrae.expect.ui.WebViewState.Finished -> "Finished"
-                        is com.xevrae.expect.ui.WebViewState.Loading -> "Loading ${it.progress}%"
-                    }
-                }",
-            )
+            Logger.d("LogInScreen", "WebViewState: $it")
         }
     }
 
