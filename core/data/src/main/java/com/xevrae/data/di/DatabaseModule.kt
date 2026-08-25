@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.xevrae.common.DB_NAME
 import com.xevrae.data.dataStore.DataStoreManagerImpl
 import com.xevrae.data.dataStore.createDataStoreInstance
@@ -42,8 +41,7 @@ object DatabaseModule {
     ): MusicDatabase {
         return Room.databaseBuilder(context, MusicDatabase::class.java, DB_NAME)
             .addTypeConverter(converters)
-            .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.IO)
+            .fallbackToDestructiveMigration(false)
             .build()
     }
 
