@@ -49,7 +49,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
 import xevrae.composeapp.generated.resources.log_in_to_spotify
@@ -60,8 +60,8 @@ import xevrae.composeapp.generated.resources.login_success
 fun SpotifyLoginScreen(
     innerPadding: PaddingValues,
     navController: NavController,
-    viewModel: LogInViewModel = koinViewModel(),
-    settingsViewModel: SettingsViewModel = koinViewModel(),
+    viewModel: LogInViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     hideBottomNavigation: () -> Unit,
     showBottomNavigation: () -> Unit,
 ) {

@@ -131,8 +131,9 @@ import kotlinx.coroutines.runBlocking
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.albums
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
@@ -152,8 +153,8 @@ import xevrae.composeapp.generated.resources.videos
 @ExperimentalMaterial3Api
 fun ArtistScreen(
     channelId: String,
-    viewModel: ArtistViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: ArtistViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val artistScreenState by viewModel.artistScreenState.collectAsStateWithLifecycle()

@@ -132,7 +132,8 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.albums
 import xevrae.composeapp.generated.resources.artists
@@ -155,8 +156,8 @@ import xevrae.composeapp.generated.resources.videos
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SearchScreen(
-    searchViewModel: SearchViewModel = koinInject(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    searchViewModel: SearchViewModel = hiltInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val focusManager = LocalFocusManager.current

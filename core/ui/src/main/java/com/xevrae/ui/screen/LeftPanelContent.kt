@@ -65,7 +65,7 @@ import com.xevrae.ui.theme.typo
 import com.xevrae.viewModel.SettingsViewModel
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.add_an_account
 import xevrae.composeapp.generated.resources.baseline_close_24
@@ -83,7 +83,7 @@ fun LeftPanelContent(
     accountName: String,
     navController: NavController,
     onDismiss: () -> Unit,
-    settingsViewModel: SettingsViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
     var showYouTubeAccountDialog by rememberSaveable { mutableStateOf(false) }
 

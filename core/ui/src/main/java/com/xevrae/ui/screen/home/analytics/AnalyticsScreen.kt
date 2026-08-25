@@ -88,8 +88,9 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.artists
 import xevrae.composeapp.generated.resources.date_range
@@ -114,8 +115,8 @@ import xevrae.composeapp.generated.resources.your_top_tracks
 fun AnalyticsScreen(
     innerPadding: PaddingValues,
     navController: NavController,
-    analyticsViewModel: AnalyticsViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    analyticsViewModel: AnalyticsViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val density = LocalDensity.current
     val screenSizeInfo = getScreenSizeInfo()

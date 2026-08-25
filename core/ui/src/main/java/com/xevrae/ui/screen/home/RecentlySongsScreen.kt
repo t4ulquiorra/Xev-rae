@@ -49,8 +49,9 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.flow.map
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
 import xevrae.composeapp.generated.resources.error
@@ -61,8 +62,8 @@ import xevrae.composeapp.generated.resources.recently_added
 fun RecentlySongsScreen(
     innerPadding: PaddingValues,
     navController: NavController,
-    viewModel: RecentlySongsViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: RecentlySongsViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val hazeState = rememberHazeState()
 

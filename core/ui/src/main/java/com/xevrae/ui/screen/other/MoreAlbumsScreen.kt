@@ -45,7 +45,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
 
@@ -56,7 +56,7 @@ fun MoreAlbumsScreen(
     navController: NavController,
     id: String? = null,
     type: String? = null,
-    viewModel: MoreAlbumsViewModel = koinViewModel(),
+    viewModel: MoreAlbumsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val hazeState = rememberHazeState()

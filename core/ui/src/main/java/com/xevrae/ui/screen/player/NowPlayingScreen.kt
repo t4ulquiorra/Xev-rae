@@ -196,8 +196,9 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.app_icon
 import xevrae.composeapp.generated.resources.artists
@@ -241,7 +242,7 @@ private val RICH_SYNC_TIMESTAMP_REGEX = Regex("""<\d{2}:\d{2}\.\d{2,3}>\s*""")
 @ExperimentalMaterial3Api
 @Composable
 fun NowPlayingScreen(
-    sharedViewModel: SharedViewModel = koinInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
     onDismiss: () -> Unit = {},
 ) {
@@ -290,8 +291,8 @@ fun NowPlayingScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NowPlayingScreenContent(
-    sharedViewModel: SharedViewModel = koinInject(),
-    mediaPlayerHandler: MediaPlayerHandler = koinInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
+    mediaPlayerHandler: MediaPlayerHandler = hiltInject(),
     navController: NavController,
     isExpanded: Boolean,
     dismissIcon: ImageVector,
@@ -707,7 +708,7 @@ fun NowPlayingScreenContent(
 
     // NEW: Add to Playlist Bottom Sheet
     if (showAddToPlaylistDirectly) {
-        val viewModel: NowPlayingBottomSheetViewModel = koinViewModel()
+        val viewModel: NowPlayingBottomSheetViewModel = hiltViewModel()
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(Unit) {

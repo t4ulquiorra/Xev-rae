@@ -124,7 +124,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xevrae.composeapp.generated.resources.painterResource
-import org.koin.compose.koinInject
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.app_icon
 import xevrae.composeapp.generated.resources.holder
@@ -140,7 +141,7 @@ fun MiniPlayer(
     modifier: Modifier,
     backdrop: PlatformBackdrop,
     cornerRadius: androidx.compose.ui.unit.Dp = 16.dp,
-    sharedViewModel: SharedViewModel = koinInject(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     onClose: () -> Unit,
     onClick: () -> Unit,
 ) {

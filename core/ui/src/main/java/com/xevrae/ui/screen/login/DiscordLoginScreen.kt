@@ -36,7 +36,8 @@ import com.xevrae.ui.component.RippleIconButton
 import com.xevrae.ui.theme.typo
 import com.xevrae.viewModel.LogInViewModel
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
 import xevrae.composeapp.generated.resources.log_in_to_discord
@@ -47,7 +48,7 @@ import xevrae.composeapp.generated.resources.login_success
 fun DiscordLoginScreen(
     innerPadding: PaddingValues,
     navController: NavController,
-    viewModel: LogInViewModel = koinInject(),
+    viewModel: LogInViewModel = hiltViewModel(),
     hideBottomNavigation: () -> Unit,
     showBottomNavigation: () -> Unit,
 ) {

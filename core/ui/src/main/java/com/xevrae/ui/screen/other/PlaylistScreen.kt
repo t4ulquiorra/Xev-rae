@@ -138,8 +138,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.album_length
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
@@ -159,8 +160,8 @@ import xevrae.composeapp.generated.resources.unlimited
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistScreen(
-    viewModel: PlaylistViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: PlaylistViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     playlistId: String,
     isYourYouTubePlaylist: Boolean,
     navController: NavController,

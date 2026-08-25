@@ -23,13 +23,13 @@ import com.xevrae.ui.component.NormalAppBar
 import com.xevrae.ui.theme.typo
 import com.xevrae.viewModel.MoodViewModel
 import xevrae.composeapp.generated.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.*
 
 @Composable
 fun MoodScreen(
     navController: NavController,
-    viewModel: MoodViewModel = koinViewModel(),
+    viewModel: MoodViewModel = hiltViewModel(),
     params: String?,
 ) {
     val moodData by viewModel.moodsMomentObject.collectAsStateWithLifecycle()

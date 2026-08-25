@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xevrae.composeapp.generated.resources.Res
+import xevrae.composeapp.generated.resources.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler

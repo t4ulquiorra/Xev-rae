@@ -69,8 +69,9 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import xevrae.composeapp.generated.resources.StringResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
 import xevrae.composeapp.generated.resources.baseline_close_24
@@ -95,9 +96,9 @@ fun LibraryDynamicPlaylistScreen(
     innerPadding: PaddingValues,
     navController: NavController,
     type: String,
-    viewModel: LibraryDynamicPlaylistViewModel = koinViewModel(),
-    analyticsViewModel: AnalyticsViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: LibraryDynamicPlaylistViewModel = hiltViewModel(),
+    analyticsViewModel: AnalyticsViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val nowPlayingVideoId by viewModel.nowPlayingVideoId.collectAsStateWithLifecycle()
 

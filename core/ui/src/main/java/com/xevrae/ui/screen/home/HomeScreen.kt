@@ -149,8 +149,9 @@ import io.ktor.http.Url
 import kotlinx.coroutines.launch
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.app_icon
 import xevrae.composeapp.generated.resources.all
@@ -207,9 +208,9 @@ fun HomeScreen(
     onScrolling: (onTop: Boolean) -> Unit = {},
     onOpenLeftPanel: (String, String) -> Unit = { _, _ -> },
     viewModel: HomeViewModel =
-        koinViewModel(),
+        hiltViewModel(),
     sharedViewModel: SharedViewModel =
-        koinInject(),
+        hiltInject(),
     navController: NavController,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -890,7 +891,7 @@ fun AccountLayout(
 @Composable
 fun QuickPicks(
     homeItem: HomeItem,
-    viewModel: HomeViewModel = koinViewModel(),
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val lazyListState = rememberLazyGridState()
     val snapperFlingBehavior = rememberSnapFlingBehavior(SnapLayoutInfoProvider(lazyGridState = lazyListState, snapPosition = SnapPosition.Start))

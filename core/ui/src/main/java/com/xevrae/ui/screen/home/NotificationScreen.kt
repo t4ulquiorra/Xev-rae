@@ -59,7 +59,7 @@ import com.xevrae.ui.theme.typo
 import com.xevrae.viewModel.NotificationViewModel
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.app_icon
 import xevrae.composeapp.generated.resources.album
@@ -74,7 +74,7 @@ import xevrae.composeapp.generated.resources.singles
 @Composable
 fun NotificationScreen(
     navController: NavController,
-    viewModel: NotificationViewModel = koinViewModel(),
+    viewModel: NotificationViewModel = hiltViewModel(),
 ) {
     val listNotification by viewModel.listNotification.collectAsStateWithLifecycle()
     Column {

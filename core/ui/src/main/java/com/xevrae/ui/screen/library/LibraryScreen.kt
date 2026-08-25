@@ -87,7 +87,7 @@ import kotlinx.coroutines.runBlocking
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.baseline_people_alt_24
 import xevrae.composeapp.generated.resources.chart
@@ -115,7 +115,7 @@ import xevrae.composeapp.generated.resources.your_youtube_playlists
 @Composable
 fun LibraryScreen(
     innerPadding: PaddingValues,
-    viewModel: LibraryViewModel = koinViewModel(),
+    viewModel: LibraryViewModel = hiltViewModel(),
     navController: NavController,
     onScrolling: (onTop: Boolean) -> Unit = {},
 ) {

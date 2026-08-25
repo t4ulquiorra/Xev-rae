@@ -155,8 +155,9 @@ import kotlinx.datetime.format.byUnicodePattern
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.about_us
 import xevrae.composeapp.generated.resources.add_an_account
@@ -353,8 +354,8 @@ import java.time.format.DateTimeFormatter
 fun SettingScreen(
     innerPadding: PaddingValues,
     navController: NavController,
-    viewModel: SettingsViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: SettingsViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val platformContext = LocalPlatformContext.current
     val pl = com.mohamedrejeb.calf.core.LocalPlatformContext.current

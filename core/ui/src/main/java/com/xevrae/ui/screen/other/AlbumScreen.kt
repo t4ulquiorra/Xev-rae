@@ -122,8 +122,9 @@ import kotlinx.coroutines.runBlocking
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.album
 import xevrae.composeapp.generated.resources.album_length
@@ -143,8 +144,8 @@ import xevrae.composeapp.generated.resources.year_and_category
 fun AlbumScreen(
     browseId: String,
     navController: NavController,
-    viewModel: AlbumViewModel = koinViewModel(),
-    sharedViewModel: SharedViewModel = koinInject(),
+    viewModel: AlbumViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
 ) {
     val uriHandler = LocalUriHandler.current
 

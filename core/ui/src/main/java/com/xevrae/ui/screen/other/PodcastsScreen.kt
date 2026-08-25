@@ -89,7 +89,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.app_icon
 import xevrae.composeapp.generated.resources.album_length
@@ -104,7 +104,7 @@ import xevrae.composeapp.generated.resources.podcasts
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PodcastScreen(
-    viewModel: PodcastViewModel = koinViewModel(),
+    viewModel: PodcastViewModel = hiltViewModel(),
     podcastId: String,
     navController: NavController,
 ) {

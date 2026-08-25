@@ -146,8 +146,9 @@ import kotlinx.datetime.format.char
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.painterResource
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.album_length
 import xevrae.composeapp.generated.resources.baseline_arrow_back_ios_new_24
@@ -182,8 +183,8 @@ private const val TAG = "LocalPlaylistScreen"
 @Composable
 fun LocalPlaylistScreen(
     id: Long,
-    sharedViewModel: SharedViewModel = koinInject(),
-    viewModel: LocalPlaylistViewModel = koinViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(),
+    viewModel: LocalPlaylistViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val composition by rememberLottieComposition {

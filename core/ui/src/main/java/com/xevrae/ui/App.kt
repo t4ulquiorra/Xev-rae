@@ -118,7 +118,8 @@ import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import xevrae.composeapp.generated.resources.getString
 import xevrae.composeapp.generated.resources.stringResource
-import org.koin.compose.koinInject
+import com.xevrae.ui.di.hiltInject
+import androidx.hilt.navigation.compose.hiltViewModel
 import xevrae.composeapp.generated.resources.Res
 import xevrae.composeapp.generated.resources.cancel
 import xevrae.composeapp.generated.resources.do_not_show_again
