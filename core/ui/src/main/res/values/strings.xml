@@ -95,8 +95,8 @@
     <string name="singles">Singles</string>
     <string name="related_artists">Related Artists</string>
     <string name="about">About</string>
-    <string name="let_s_start_with_a_radio">LET'S START WITH A RADIO</string>
-    <string name="let_s_pick_a_playlist_for_you">LET'S PICK A PLAYLIST FOR YOU</string>
+    <string name="let_s_start_with_a_radio">LET\'S START WITH A RADIO</string>
+    <string name="let_s_pick_a_playlist_for_you">LET\'S PICK A PLAYLIST FOR YOU</string>
     <string name="moods_amp_moment"><![CDATA[Moods & Moment]]></string>
     <string name="genre">Genre</string>
     <string name="what_is_best_choice_today">WHAT IS BEST CHOICE TODAY</string>
@@ -158,7 +158,7 @@
     <string name="balance_media_loudness">Balance media loudness</string>
     <string name="normalize_volume">Normalize Volume</string>
     <string name="audio">Audio</string>
-    <string name="no_equalizer">Your device doesn't have equalizer</string>
+    <string name="no_equalizer">Your device doesn\'t have equalizer</string>
     <string name="open_system_equalizer">Open system equalizer</string>
     <string name="use_your_system_equalizer">Use your system equalizer</string>
     <string name="version_format" translatable="false">v%1$s</string>
@@ -205,7 +205,7 @@
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred. Sorry for the inconvenience.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
     <string name="help_build_lyrics_database">Help Xevrae lyrics build the lyrics database</string>
-    <string name="help_build_lyrics_database_description">Send your saved lyrics to Xevrae lyrics's database</string>
+    <string name="help_build_lyrics_database_description">Send your saved lyrics to Xevrae lyrics\'s database</string>
     <string name="customactivityoncrash_error_activity_close_app">Close app</string>
     <string name="customactivityoncrash_error_activity_error_details">Error details</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Error details</string>
@@ -244,7 +244,7 @@
     <string name="log_in_to_get_YouTube_playlist">Log in to get YouTube Playlist</string>
     <string name="sync_playlist_warning">Xevrae will create a YouTube Music Playlist automatically. Are you sure?</string>
     <string name="syncing">Syncing</string>
-    <string name="unsync_playlist_warning">"Unsync this playlist? This playlist will not be removed from YouTube Music "</string>
+    <string name="unsync_playlist_warning">Unsync this playlist? This playlist will not be removed from YouTube Music </string>
     <string name="unsyncing">Unsyncing</string>
     <string name="added_to_youtube_playlist">Added to YouTube Playlist</string>
     <string name="removed_from_YouTube_playlist">Removed from YouTube Playlist</string>
@@ -259,7 +259,7 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="please_enter_your_email_and_password">Please enter your email and password</string>
-    <string name="translation_language_message">Type language code (Eg: en) (2 letters). If you want to set same with Xevrae's language, please make edit box empty.</string>
+    <string name="translation_language_message">Type language code (Eg: en) (2 letters). If you want to set same with Xevrae\'s language, please make edit box empty.</string>
     <string name="invalid_language_code">Invalid language code</string>
     <string name="lyrics_provider_youtube">Lyrics provided by YouTube</string>
     <string name="lyrics_provider_betterlyrics">Lyrics provided by BetterLyrics</string>
@@ -364,12 +364,12 @@
     <string name="focus">Focus</string>
     <string name="updated">Updated</string>
     <string name="updated_to_youtube_playlist">Updated to YouTube Playlist</string>
-    <string name="can_t_add_to_youtube_playlist">Can't add to YouTube Playlist</string>
-    <string name="can_t_delete_from_youtube_playlist">Can't delete song from YouTube Playlist</string>
+    <string name="can_t_add_to_youtube_playlist">Can\'t add to YouTube Playlist</string>
+    <string name="can_t_delete_from_youtube_playlist">Can\'t delete song from YouTube Playlist</string>
     <string name="loading">Loading</string>
     <string name="updating">Updating</string>
     <string name="go_to_log_in_page">Go to log in page</string>
-    <string name="log_in_warning">YouTube Music now requires you to log in to stream music, Piped Instance sometime can't work too. You should log in to YouTube to get better experience with Xevrae.</string>
+    <string name="log_in_warning">YouTube Music now requires you to log in to stream music, Piped Instance sometime can\'t work too. You should log in to YouTube to get better experience with Xevrae.</string>
     <string name="spotify_canvas_cache">Spotify Canvas Cache</string>
     <string name="clear_canvas_cache">Clear canvas cache</string>
     <string name="proxy">Proxy</string>
@@ -409,7 +409,7 @@
     <string name="downloading_audio">Downloading audio: %1$s </string>
     <string name="downloading_video">Downloading video: %1$s </string>
     <string name="ok">OK</string>
-    <string name="to_download_folder">" to Download folder"</string>
+    <string name="to_download_folder"> to Download folder</string>
     <string name="download_speed">Download speed:  %1$s </string>
     <string name="shuffle">Shuffle</string>
     <string name="other_version">Other version</string>
@@ -417,7 +417,7 @@
     <string name="give_a_star">Give a star</string>
     <string name="enjoying_xevrae">Enjoying Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">If you enjoy using Xevrae, star Xevrae on GitHub or leave a review on</string>
-    <string name="if_you_love_my_work_consider">"If you love my work, consider "</string>
+    <string name="if_you_love_my_work_consider">If you love my work, consider </string>
     <string name="buying_me_a_coffee">buying me a coffee.</string>
     <string name="fade_audio_effect">Fade audio effect</string>
     <string name="disabled">Disable</string>
@@ -438,7 +438,7 @@
     <string name="ai_api_key">Your AI API Key</string>
     <string name="invalid_api_key">Invalid API key</string>
     <string name="custom_ai_model_id">Custom AI model ID</string>
-    <string name="default_models">Default models are "gemini-2.0-flash" and "gpt-4o"</string>
+    <string name="default_models">Default models are \"gemini-2.0-flash\" and \"gpt-4o\"</string>
     <string name="invalid">Invalid</string>
     <string name="custom_model_id_messages">Please enter the exactly model ID from your AI provider.</string>
     <string name="favorite_podcasts">Favorite Podcasts</string>
@@ -474,7 +474,7 @@
     <string name="backup_in_progress">Backup in progress</string>
     <string name="restore_in_progress">Restore in progress</string>
     <string name="backup_downloaded">Backup downloaded data</string>
-    <string name="backup_downloaded_description">Backup all downloaded songs's data</string>
+    <string name="backup_downloaded_description">Backup all downloaded songs\'s data</string>
     <string name="auto_backup">Auto backup</string>
     <string name="auto_backup_description">Automatically backup your data to Downloads/Xevrae folder</string>
     <string name="backup_frequency">Backup frequency</string>
@@ -492,7 +492,7 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="update_channel">Update channel</string>
     <string name="enable_liquid_glass_effect">Enable liquid glass (BETA)</string>
-    <string name="enable_liquid_glass_effect_description">Enable iOS's liquid glass effect in some position (Android 13+)</string>
+    <string name="enable_liquid_glass_effect_description">Enable iOS\'s liquid glass effect in some position (Android 13+)</string>
     <string name="your_library">Your library</string>
     <string name="play_explicit_content">Play explicit content</string>
     <string name="play_explicit_content_description">Enable to play explicit content</string>

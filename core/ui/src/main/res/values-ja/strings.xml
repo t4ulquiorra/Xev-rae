@@ -238,7 +238,7 @@
     <string name="log_in_to_get_YouTube_playlist">ログインしてYouTubeの再生リストを取得</string>
     <string name="sync_playlist_warning">Xevrae は YouTube ミュージックの再生リストを自動で作成します。よろしいですか？</string>
     <string name="syncing">同期中</string>
-    <string name="unsync_playlist_warning">"この再生リストの同期を解除しますか？この再生リストはYouTubeミュージックから削除されません "</string>
+    <string name="unsync_playlist_warning">この再生リストの同期を解除しますか？この再生リストはYouTubeミュージックから削除されません </string>
     <string name="unsyncing">同期を解除中</string>
     <string name="added_to_youtube_playlist">YouTubeの再生リストに追加しました</string>
     <string name="removed_from_YouTube_playlist">YouTube の再生リストから削除しました</string>
@@ -391,7 +391,7 @@
     <string name="downloading_audio">音声をダウンロード中: %1$s </string>
     <string name="downloading_video">動画をダウンロード中: %1$s </string>
     <string name="ok">OK</string>
-    <string name="to_download_folder">" ダウンロードフォルダ内に"</string>
+    <string name="to_download_folder"> ダウンロードフォルダ内に</string>
     <string name="download_speed">ダウンロード速度:  %1$s </string>
     <string name="shuffle">シャッフル</string>
     <string name="other_version">他のバージョン</string>
@@ -399,7 +399,7 @@
     <string name="give_a_star">星マークを押す</string>
     <string name="enjoying_xevrae">Xevraeを楽しんでください</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Xevraeで楽しんでいたら、GitHubで星マークを押すか、ここにレビューを投稿してください:</string>
-    <string name="if_you_love_my_work_consider">"私のアプリを気に入ったら、"</string>
+    <string name="if_you_love_my_work_consider">私のアプリを気に入ったら、</string>
     <string name="buying_me_a_coffee">コーヒーを一杯ご馳走してください。</string>
     <string name="fade_audio_effect">フェードの音声エフェクト</string>
     <string name="disabled">無効</string>

@@ -242,7 +242,7 @@
     <string name="log_in_to_get_YouTube_playlist">Inicia sesión para obtener la lista de reproducción de YouTube</string>
     <string name="sync_playlist_warning">Xevrae creará automáticamente una lista de reproducción de música de YouTube. ¿Estás seguro?</string>
     <string name="syncing">Sincronizando</string>
-    <string name="unsync_playlist_warning">"¿Dessincronizar esta lista? Esta lista de reproducción no se eliminará de YouTube Music "</string>
+    <string name="unsync_playlist_warning">¿Dessincronizar esta lista? Esta lista de reproducción no se eliminará de YouTube Music </string>
     <string name="unsyncing">Dessincronizando</string>
     <string name="added_to_youtube_playlist">Añadido a la lista de reproducción de YouTube</string>
     <string name="removed_from_YouTube_playlist">Eliminado de la lista de reproducción de YouTube</string>
@@ -399,7 +399,7 @@
     <string name="downloading_audio">Descargando audio: %1$s </string>
     <string name="downloading_video">Descargando video: %1$s </string>
     <string name="ok">OK</string>
-    <string name="to_download_folder">" a la carpeta de Descargas"</string>
+    <string name="to_download_folder"> a la carpeta de Descargas</string>
     <string name="download_speed">Velocidad de descarga:  %1$s </string>
     <string name="shuffle">Aleatorio</string>
     <string name="other_version">Otras versiones</string>
@@ -407,7 +407,7 @@
     <string name="give_a_star">Dar una estrella</string>
     <string name="enjoying_xevrae">Disfrutando Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Si te gusta usar Xevrae, da una estrella a Xevrae en gituhb o deja una reseña</string>
-    <string name="if_you_love_my_work_consider">"Si amas mi trabajo, considera "</string>
+    <string name="if_you_love_my_work_consider">Si amas mi trabajo, considera </string>
     <string name="buying_me_a_coffee">comprame un café.</string>
     <string name="fade_audio_effect">Efecto de desvanecimiento de audio</string>
     <string name="disabled">Desactivar</string>

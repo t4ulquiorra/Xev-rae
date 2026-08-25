@@ -236,7 +236,7 @@
     <string name="log_in_to_get_YouTube_playlist">登入以取得YouTube播放清單</string>
     <string name="sync_playlist_warning">Xevrae將自動建立YouTube音樂播放清單。 你確定嗎？</string>
     <string name="syncing">正在同步</string>
-    <string name="unsync_playlist_warning">"取消同步此播放清單？ 該播放清單不會從YouTube Music中刪除 "</string>
+    <string name="unsync_playlist_warning">取消同步此播放清單？ 該播放清單不會從YouTube Music中刪除 </string>
     <string name="unsyncing">正取消同步</string>
     <string name="added_to_youtube_playlist">新增至YouTube播放清單</string>
     <string name="removed_from_YouTube_playlist">從YouTube播放清單中移除</string>
@@ -389,7 +389,7 @@
     <string name="downloading_audio">下載音頻中...%1$s </string>
     <string name="downloading_video">下載影片中...%1$s </string>
     <string name="ok">確認</string>
-    <string name="to_download_folder">" 至下載文件夾"</string>
+    <string name="to_download_folder"> 至下載文件夾</string>
     <string name="download_speed">下載速度...%1$s </string>
     <string name="shuffle">隨機播放</string>
     <string name="other_version">其他版本</string>
@@ -397,7 +397,7 @@
     <string name="give_a_star">給個星吧</string>
     <string name="enjoying_xevrae">享受Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">如果你享受使用Xevrae，就在GitHub給個星或者評論吧</string>
-    <string name="if_you_love_my_work_consider">"若你認可我的工作，考慮 "</string>
+    <string name="if_you_love_my_work_consider">若你認可我的工作，考慮 </string>
     <string name="buying_me_a_coffee">請我喝杯咖啡。</string>
     <string name="fade_audio_effect">淡入/淡出音頻效果</string>
     <string name="disabled">停用</string>

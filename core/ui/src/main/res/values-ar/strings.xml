@@ -234,7 +234,7 @@
     <string name="log_in_to_get_YouTube_playlist">تسجيل الدخول للحصول على قائمة تشغيل YouTube</string>
     <string name="sync_playlist_warning">Xevrae سينشئ قائمة تشغيل YouTube Music تلقائيًّا. هل أنت متأكد؟</string>
     <string name="syncing">المزامنة جارية</string>
-    <string name="unsync_playlist_warning">"إلغاء مزامنة قائمة التشغيل هذه؟ لن تتم إزالة قائمة التشغيل هذه من YouTube Music "</string>
+    <string name="unsync_playlist_warning">إلغاء مزامنة قائمة التشغيل هذه؟ لن تتم إزالة قائمة التشغيل هذه من YouTube Music </string>
     <string name="unsyncing">إلغاء المزامنة</string>
     <string name="added_to_youtube_playlist">تمت الإضافة إلى قائمة تشغيل YouTube</string>
     <string name="removed_from_YouTube_playlist">تمت إزالته من قائمة تشغيل يوتيوب</string>

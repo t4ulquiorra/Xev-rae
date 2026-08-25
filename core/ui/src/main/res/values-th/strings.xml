@@ -241,7 +241,7 @@
     <string name="log_in_to_get_YouTube_playlist">เข้าสู่ระบบเพื่อรับเพลย์ลิสต์ YouTube</string>
     <string name="sync_playlist_warning">Xevrae จะสร้างเพลย์ลิสต์ของ YouTube Music โดยอัตโนมัติ คุณแน่ใจเหรอ?</string>
     <string name="syncing">กำลังซิงค์</string>
-    <string name="unsync_playlist_warning">"ยกเลิกการซิงค์เพลย์ลิสต์นี้ใช่ไหม เพลย์ลิสต์นี้จะไม่ถูกลบออกจาก YouTube Music "</string>
+    <string name="unsync_playlist_warning">ยกเลิกการซิงค์เพลย์ลิสต์นี้ใช่ไหม เพลย์ลิสต์นี้จะไม่ถูกลบออกจาก YouTube Music </string>
     <string name="unsyncing">กำลังยกเลิกการซิงค์</string>
     <string name="added_to_youtube_playlist">เพิ่มเพลย์ลิสต์ลงใน YouTube แล้ว</string>
     <string name="removed_from_YouTube_playlist">ลบเพลย์ลิสต์ออกจาก YouTube แล้ว</string>
@@ -396,7 +396,7 @@
     <string name="downloading_audio">กำลังดาวน์โหลดเสียง:%1$s </string>
     <string name="downloading_video">กำลังดาวน์โหลดวิดีโอ:%1$s </string>
     <string name="ok">ตกลง</string>
-    <string name="to_download_folder">" ไปที่โฟลเดอร์ดาวน์โหลด"</string>
+    <string name="to_download_folder"> ไปที่โฟลเดอร์ดาวน์โหลด</string>
     <string name="download_speed">ความเร็วในการดาวน์โหลด: %1$s </string>
     <string name="shuffle">สลับ</string>
     <string name="other_version">เวอร์ชั่นอื่นๆ</string>
@@ -404,7 +404,7 @@
     <string name="give_a_star">ให้ดาว</string>
     <string name="enjoying_xevrae">กำลังเพลิดเพลินกับ Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">หากสนุกกับการใช้ Xevrae กรุณากดดาวที่ Xevrae บน GitHub หรือเขียนรีวิวให้ด้วยนะ</string>
-    <string name="if_you_love_my_work_consider">"ถ้าคุณชอบผลงานของฉัน ลองพิจารณา "</string>
+    <string name="if_you_love_my_work_consider">ถ้าคุณชอบผลงานของฉัน ลองพิจารณา </string>
     <string name="buying_me_a_coffee">เลี้ยงกาแฟฉัน</string>
     <string name="fade_audio_effect">เอฟเฟกต์การจางเสียง</string>
     <string name="disabled">ปิดการใช้งาน</string>

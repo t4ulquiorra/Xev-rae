@@ -241,7 +241,7 @@
     <string name="log_in_to_get_YouTube_playlist">Войдите, чтобы получить плейлист YouTube</string>
     <string name="sync_playlist_warning">Xevrae автоматически создаст плейлист YouTube Music. Вы уверены?</string>
     <string name="syncing">Синхронизация</string>
-    <string name="unsync_playlist_warning">"Отменить синхронизацию этого плейлиста? Этот плейлист не будет удален из YouTube Music "</string>
+    <string name="unsync_playlist_warning">Отменить синхронизацию этого плейлиста? Этот плейлист не будет удален из YouTube Music </string>
     <string name="unsyncing">Отмена синхронизации</string>
     <string name="added_to_youtube_playlist">Добавлено в плейлист YouTube</string>
     <string name="removed_from_YouTube_playlist">Удалено из плейлиста YouTube</string>
@@ -399,7 +399,7 @@
     <string name="downloading_audio">Загрузка аудио: %1$s </string>
     <string name="downloading_video">Загрузка видео: %1$s </string>
     <string name="ok">OK</string>
-    <string name="to_download_folder">" в папку Загрузки"</string>
+    <string name="to_download_folder"> в папку Загрузки</string>
     <string name="download_speed">Скорость загрузки: %1$s </string>
     <string name="shuffle">Перемешать</string>
     <string name="other_version">Другие версии</string>
@@ -407,7 +407,7 @@
     <string name="give_a_star">Дать звезду</string>
     <string name="enjoying_xevrae">Нравится Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Если вам нравится пользоваться Xevrae, оцените Xevrae на GitHub или оставьте свой отзыв на</string>
-    <string name="if_you_love_my_work_consider">"Если вам нравится моя работа, рассмотрите "</string>
+    <string name="if_you_love_my_work_consider">Если вам нравится моя работа, рассмотрите </string>
     <string name="buying_me_a_coffee">купить мне кофе.</string>
     <string name="fade_audio_effect">Эффект затухания звука</string>
     <string name="disabled">Отключить</string>
@@ -488,8 +488,7 @@
     <string name="mix_for_you">Миксы для вас</string>
     <string name="no_mixes_found">Не найдено миксов</string>
     <string name="no_charts_found">Чарты не найдены</string>
-    <string name="desktop_webview_description">В связи с ограничениями Compose Multiplatform, WebView невозможно реализовать на настольных устройствах.\n
-Ознакомьтесь с этим руководством, чтобы узнать, как выполнить вход на настольной версии:\n</string>
+    <string name="desktop_webview_description">В связи с ограничениями Compose Multiplatform, WebView невозможно реализовать на настольных устройствах.\n Ознакомьтесь с этим руководством, чтобы узнать, как выполнить вход на настольной версии:\n</string>
     <string name="open_blog_post">Читать в блоге</string>
     <string name="discord_integration">Интеграция Discord</string>
     <string name="log_in_to_discord">Войти в Discord</string>

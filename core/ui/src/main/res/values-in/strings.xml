@@ -172,7 +172,7 @@
     <string name="save_last_played">Simpan Terakhir Diputar</string>
     <string name="save_last_played_track_and_queue">Menyimpan lagu yang terakhir diputar dan antrean</string>
     <string name="update_available">Pembaruan baru tersedia</string>
-    <string name="update_message">"Versi %1$s tersedia\nRilis: %2$s\nLog diubah: \n%3$s "</string>
+    <string name="update_message">Versi %1$s tersedia\nRilis: %2$s\nLog diubah: \n%3$s </string>
     <string name="check_for_update">Cek versi terbaru</string>
     <string name="last_checked_at">Terakhir diperiksa pada %1$s</string>
     <string name="checking">Memeriksa</string>
@@ -232,7 +232,7 @@
     <string name="log_in_to_get_YouTube_playlist">Masuk untuk mendapatkan Playlist YouTube</string>
     <string name="sync_playlist_warning">Xevrae akan membuat Playlist YouTube Musik secara otomatis. Apakah Anda yakin?</string>
     <string name="syncing">Sinkronisasi</string>
-    <string name="unsync_playlist_warning">"Membatalkan sinkronisasi playlist ini? Playlist ini tidak akan dihapus dari YouTube Music "</string>
+    <string name="unsync_playlist_warning">Membatalkan sinkronisasi playlist ini? Playlist ini tidak akan dihapus dari YouTube Music </string>
     <string name="unsyncing">Tidak Disinkronkan</string>
     <string name="added_to_youtube_playlist">Ditambahkan ke Playlist YouTube</string>
     <string name="removed_from_YouTube_playlist">Dihapus dari Playlist YouTube</string>

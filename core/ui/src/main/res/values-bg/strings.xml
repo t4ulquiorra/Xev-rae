@@ -241,7 +241,7 @@
     <string name="log_in_to_get_YouTube_playlist">Влезте за да получите YouTube Playlist</string>
     <string name="sync_playlist_warning">Xevrae ще създаде YouTube Music Playlist автоматично. Сигурни ли сте?</string>
     <string name="syncing">Синхронизиране</string>
-    <string name="unsync_playlist_warning">"Разсинхронизиране на този плейлист? Този плейлист ще бъде премахнат от YouTube Music "</string>
+    <string name="unsync_playlist_warning">Разсинхронизиране на този плейлист? Този плейлист ще бъде премахнат от YouTube Music </string>
     <string name="unsyncing">Разсинхронизиране</string>
     <string name="added_to_youtube_playlist">Добавен към YouTube Playlist</string>
     <string name="removed_from_YouTube_playlist">Премахнат от YouTube Playlist</string>
@@ -397,7 +397,7 @@
     <string name="downloading_audio">Сваляне на аудио: %1$s </string>
     <string name="downloading_video">Сваляне на видео: %1$s </string>
     <string name="ok">ОК</string>
-    <string name="to_download_folder">" в Свалени"</string>
+    <string name="to_download_folder"> в Свалени</string>
     <string name="download_speed">Скорост на сваляне: %1$s </string>
     <string name="shuffle">Разбъркване</string>
     <string name="other_version">Друга версия</string>
@@ -405,7 +405,7 @@
     <string name="give_a_star">Оцени</string>
     <string name="enjoying_xevrae">Доволни от Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Оценете Xevrae в GitHub или оставете ревю ако сте доволни</string>
-    <string name="if_you_love_my_work_consider">"Ако сте доволни от работата ми, моля помислете да "</string>
+    <string name="if_you_love_my_work_consider">Ако сте доволни от работата ми, моля помислете да </string>
     <string name="buying_me_a_coffee">ме почерпите кафе.</string>
     <string name="fade_audio_effect">Постепенно намаляване на звука</string>
     <string name="disabled">Деактивиране</string>

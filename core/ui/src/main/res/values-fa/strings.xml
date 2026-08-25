@@ -137,8 +137,7 @@
     <string name="albums_inArtist">آلبوم‌ها</string>
     <string name="singles_inArtist">تک‌آهنگ‌ها</string>
     <string name="fans_might_also_like_inArtist">طرفداران ممکن است همچنین دوست داشته باشند</string>
-    <string name="crash_log">Xevrae دچار مشکل شد. بابت این مشکل متاسفیم.\nگزارش خرابی را به
-    توسعه‌دهنده ارسال کنید</string>
+    <string name="crash_log">Xevrae دچار مشکل شد. بابت این مشکل متاسفیم.\nگزارش خرابی را به توسعه‌دهنده ارسال کنید</string>
     <string name="crash">خرابی</string>
     <string name="send">ارسال</string>
     <string name="mail_subject">گزارش خرابی</string>
@@ -164,8 +163,7 @@
     <string name="mime_type">نوع MIME</string>
     <string name="bitrate">نرخ بیت</string>
     <string name="warning">هشدار</string>
-    <string name="change_language_warning">تغییر زبان باعث بسته شدن برنامه شما می‌شود. آیا مطمئن
-    هستید؟</string>
+    <string name="change_language_warning">تغییر زبان باعث بسته شدن برنامه شما می‌شود. آیا مطمئن هستید؟</string>
     <string name="this_link_is_not_supported">این پیوند پشتیبانی نمی‌شود</string>
     <string name="added_to_playlist">به فهرست پخش افزوده شد</string>
     <string name="description">توضیحات</string>
@@ -198,12 +196,9 @@
     <string name="what_segments_will_be_skipped">کدام بخش‌ها رد خواهند شد</string>
     <string name="save">نگه‌داری</string>
     <string name="saved">نگه‌داری شد</string>
-    <string name="sponsor_block_intro">SponsorBlock یک سامانه جمع‌سپاری شده برای رد کردن بخش‌های
-    آزاردهنده ویدیوهای یوتیوب است.\nریزگان بیشتر: https://sponsor.ajay.app/\nدر Xevrae،
-    SponsorBlock فقط زمانی موجود است که دستگاه آنلاین باشد</string>
+    <string name="sponsor_block_intro">SponsorBlock یک سامانه جمع‌سپاری شده برای رد کردن بخش‌های آزاردهنده ویدیوهای یوتیوب است.\nریزگان بیشتر: https://sponsor.ajay.app/\nدر Xevrae، SponsorBlock فقط زمانی موجود است که دستگاه آنلاین باشد</string>
     <string name="skip_sponsor_part_of_video">رد کردن بخش حامی ویدیو</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">یک خطای غیرمنتظره
-    رخ داده است. از بابت ناراحتی عذرخواهی می‌کنیم.</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">یک خطای غیرمنتظره رخ داده است. از بابت ناراحتی عذرخواهی می‌کنیم.</string>
     <string name="customactivityoncrash_error_activity_restart_app">برنامه را دوباره راه‌اندازی کنید</string>
     <string name="help_build_lyrics_database">به Xevrae کمک کنید تا پایگاه داده متن ترانه را بسازد</string>
     <string name="help_build_lyrics_database_description">متن ترانه‌های ذخیره شده خود را به پایگاه داده متن Xevrae ارسال کنید</string>
@@ -239,14 +234,11 @@
     <string name="auto_created_by_youtube_music">به‌طور خودکار توسط یوتیوب موزیک ایجاد شده</string>
     <string name="start_radio">رادیو را شروع کنید</string>
     <string name="saved_to_local_playlist">به فهرست پخش محلی نگه‌داری شد</string>
-    <string name="if_you_want_to_unsync_this_playlist_please_go_to_local_playlist">اگر می‌خواهید این
-    فهرست پخش را از همگام‌سازی خارج کنید، لطفاً به فهرست پخش محلی بروید</string>
+    <string name="if_you_want_to_unsync_this_playlist_please_go_to_local_playlist">اگر می‌خواهید این فهرست پخش را از همگام‌سازی خارج کنید، لطفاً به فهرست پخش محلی بروید</string>
     <string name="log_in_to_get_YouTube_playlist">برای دریافت فهرست پخش یوتیوب وارد شوید</string>
-    <string name="sync_playlist_warning">Xevrae به‌طور خودکار یک فهرست پخش یوتیوب موزیک ایجاد خواهد
-    کرد. آیا مطمئن هستید؟</string>
+    <string name="sync_playlist_warning">Xevrae به‌طور خودکار یک فهرست پخش یوتیوب موزیک ایجاد خواهد کرد. آیا مطمئن هستید؟</string>
     <string name="syncing">در حال همگام‌سازی</string>
-    <string name="unsync_playlist_warning">"آیا این فهرست پخش را از همگام‌سازی خارج کنید؟ این فهرست پخش
-    از یوتیوب موزیک پاک نخواهد شد "</string>
+    <string name="unsync_playlist_warning">آیا این فهرست پخش را از همگام‌سازی خارج کنید؟ این فهرست پخش از یوتیوب موزیک پاک نخواهد شد </string>
     <string name="unsyncing">در حال خارج کردن از همگام‌سازی</string>
     <string name="added_to_youtube_playlist">به فهرست پخش یوتیوب افزوده شد</string>
     <string name="removed_from_YouTube_playlist">از فهرست پخش یوتیوب پاک شد</string>
@@ -261,8 +253,7 @@
     <string name="email">رایانامه</string>
     <string name="password">گذرواژه</string>
     <string name="please_enter_your_email_and_password">لطفاً رایانامه و گذرواژه خود را وارد کنید</string>
-    <string name="translation_language_message">کد زبان را وارد کنید (مثلاً: en) (2 حرف). اگر
-    می‌خواهید همان زبان Xevrae باشد، لطفاً کادر ویرایش را خالی بگذارید.</string>
+    <string name="translation_language_message">کد زبان را وارد کنید (مثلاً: en) (2 حرف). اگر می‌خواهید همان زبان Xevrae باشد، لطفاً کادر ویرایش را خالی بگذارید.</string>
     <string name="invalid_language_code">کد زبان نامعتبر است</string>
     <string name="lyrics_provider_youtube">متن ترانه ارائه شده توسط یوتیوب</string>
     <string name="limit_player_cache">محدود کردن نهان‌گاه(Cache) پخش‌کننده</string>
@@ -285,10 +276,8 @@
     <string name="featured_playlists">فهرست‌های پخش ویژه</string>
     <string name="featured_inArtist">ویژه در</string>
     <string name="audio_quality">کیفیت صدا</string>
-    <string name="play_video_for_video_track_instead_of_audio_only">پخش ویدیو برای آهنگ ویدیو به جای
-    فقط صدا</string>
-    <string name="such_as_music_video_lyrics_video_podcasts_and_more">مانند ویدیو موسیقی، ویدیو متن
-    آهنگ، پادکست‌ها و بیشتر</string>
+    <string name="play_video_for_video_track_instead_of_audio_only">پخش ویدیو برای آهنگ ویدیو به جای فقط صدا</string>
+    <string name="such_as_music_video_lyrics_video_podcasts_and_more">مانند ویدیو موسیقی، ویدیو متن آهنگ، پادکست‌ها و بیشتر</string>
     <string name="video_quality">کیفیت ویدیو</string>
     <plurals name="n_song">
         <item quantity="one">%d آهنگ</item>
@@ -296,8 +285,7 @@
     </plurals>
     <string name="dummy_button">دکمه آزمایشی</string>
     <string name="dummy_content">محتوای آزمایشی</string>
-    <string name="play_video_instead_of_audio_warning">این عمل نهان‌گاه(Cache) پخش‌کننده را پاک خواهد کرد. ادامه
-    می‌دهید؟</string>
+    <string name="play_video_instead_of_audio_warning">این عمل نهان‌گاه(Cache) پخش‌کننده را پاک خواهد کرد. ادامه می‌دهید؟</string>
     <string name="quality_video">کیفیت ویدیو</string>
     <string name="add_to_queue">افزودن به صف</string>
     <string name="added_to_queue">به صف افزوده شد</string>
@@ -404,7 +392,7 @@
     <string name="downloading_audio">در حال دانلود صدا: %1$s </string>
     <string name="downloading_video">در حال دانلود ویدیو: %1$s </string>
     <string name="ok">تایید</string>
-    <string name="to_download_folder">" در پوشه دانلود"</string>
+    <string name="to_download_folder"> در پوشه دانلود</string>
     <string name="download_speed">سرعت دانلود: %1$s </string>
     <string name="shuffle">پخش تصادفی</string>
     <string name="other_version">نسخه دیگر</string>
@@ -412,7 +400,7 @@
     <string name="give_a_star">ستاره بدید</string>
     <string name="enjoying_xevrae">از Xevrae لذت می‌بری</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">اگر از استفاده از Xevrae لذت می‌برید، به Xevrae در GitHub ستاره دهید یا نظر خود را درباره آن بنویسید</string>
-    <string name="if_you_love_my_work_consider">"اگر از کار من خوشتان می‌آید، لطفاً "</string>
+    <string name="if_you_love_my_work_consider">اگر از کار من خوشتان می‌آید، لطفاً </string>
     <string name="buying_me_a_coffee">یک قهوه برایم بخرید.</string>
     <string name="fade_audio_effect">افکت محو صدا</string>
     <string name="disabled">غیرفعال</string>

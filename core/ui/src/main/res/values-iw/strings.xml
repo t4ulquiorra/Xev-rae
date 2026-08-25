@@ -93,7 +93,7 @@
     <string name="let_s_start_with_a_radio">בואו נתחיל עם רדיו</string>
     <string name="let_s_pick_a_playlist_for_you">בוא נבחר עבורך רשימת השמעה</string>
     <string name="moods_amp_moment"><![CDATA[מצבי רוח ורגע]]></string>
-    <string name="genre">ז'אנר</string>
+    <string name="genre">ז\'אנר</string>
     <string name="what_is_best_choice_today">מהי הבחירה הטובה ביותר היום</string>
     <string name="chart">תרשים</string>
     <string name="global">גלובלי</string>
@@ -172,7 +172,7 @@
     <string name="save_last_played">שמור הושמע לאחרונה</string>
     <string name="save_last_played_track_and_queue">שמור את הרצועה האחרונה שהושמעה ואת התור</string>
     <string name="update_available">עדכון חדש זמין</string>
-    <string name="update_message">"גרסה %1$s זמין\nלשחרר:%2$s\nיומני שינוי:\n%3$s "</string>
+    <string name="update_message">גרסה %1$s זמין\nלשחרר:%2$s\nיומני שינוי:\n%3$s </string>
     <string name="check_for_update">בדוק עדכונים</string>
     <string name="last_checked_at">נבדק לאחרונה ב %1$s</string>
     <string name="checking">בודק</string>
@@ -232,7 +232,7 @@
     <string name="log_in_to_get_YouTube_playlist">התחבר כדי לקבל רשימת השמעה של יוטיוב</string>
     <string name="sync_playlist_warning">Xevrae תיצור רשימת השמעה של יוטיוב מיוזיק באופן אוטומטי. האם אתה בטוח?</string>
     <string name="syncing">מסנכרן</string>
-    <string name="unsync_playlist_warning">"לבטל את הסנכרון של הפלייליסט הזה? הפלייליסט הזה לא יוסר מיוטיוב מיוזיק "</string>
+    <string name="unsync_playlist_warning">לבטל את הסנכרון של הפלייליסט הזה? הפלייליסט הזה לא יוסר מיוטיוב מיוזיק </string>
     <string name="unsyncing">מבטל סנכרון</string>
     <string name="added_to_youtube_playlist">נוסף לרשימת ההשמעה של יוטיוב</string>
     <string name="removed_from_YouTube_playlist">הוסר מרשימת ההשמעה של יוטיוב</string>
@@ -259,8 +259,7 @@
     <string name="suggest">הצעה</string>
     <string name="reload">טען מחדש</string>
     <string name="added_date">נוסף תאריך</string>
-    <string name="credit_app">אפליקציית מוזיקה פשוטה באמצעות YouTube Music עבור backend \n\nXevrae הוא פרויקט קוד פתוח להזרמת מוזיקה מ-YouTube ו-YouTube Music ללא מודעות ומעקב. Xevrae מספקת תכונות רבות:\n\n - הזרמת מוזיקה \n - מילים מסונכרנות\n - התאמה אישית של נתונים\n - אקו… \n\n
-Xevrae תמיד בחינם וללא פרסומות\n\nבונה מ ❤️מ-t4ulquiorra</string>
+    <string name="credit_app">אפליקציית מוזיקה פשוטה באמצעות YouTube Music עבור backend \n\nXevrae הוא פרויקט קוד פתוח להזרמת מוזיקה מ-YouTube ו-YouTube Music ללא מודעות ומעקב. Xevrae מספקת תכונות רבות:\n\n - הזרמת מוזיקה \n - מילים מסונכרנות\n - התאמה אישית של נתונים\n - אקו… \n\n Xevrae תמיד בחינם וללא פרסומות\n\nבונה מ ❤️מ-t4ulquiorra</string>
     <string name="issue_tracker">מעקב סוגיות</string>
     <string name="featured_playlists">רשימות השמעה נבחרות</string>
     <string name="featured_inArtist">מצורף ב</string>
@@ -275,8 +274,7 @@ Xevrae תמיד בחינם וללא פרסומות\n\nבונה מ ❤️מ-t4ulq
         <item quantity="other">%d שירים</item>
     </plurals>
     <string name="dummy_button">כפתור דמה</string>
-    <string name="dummy_content">תוכן\n
-דמה</string>
+    <string name="dummy_content">תוכן\n דמה</string>
     <string name="play_video_instead_of_audio_warning">פעולה זו תמחק את המטמון של הנגן. לְהַמשִׁיך?</string>
     <string name="quality_video">איכות וידאו</string>
     <string name="add_to_queue">הוסף לתור</string>
@@ -306,14 +304,14 @@ Xevrae תמיד בחינם וללא פרסומות\n\nבונה מ ❤️מ-t4ulq
     <string name="canvas_info">הצג את ספוטיפיי קנבס ב-Xevrae</string>
     <string name="spotify_lyrics_provider">מילים מסופקות על ידי ספוטיפיי</string>
     <string name="offline_mode">מצב לא מקוון</string>
-    <string name="added_to_youtube_liked">נוסף ליוטיוב 'אהבתי'</string>
-    <string name="removed_from_youtube_liked">הוסר מיוטיוב 'אהבתי'</string>
+    <string name="added_to_youtube_liked">נוסף ליוטיוב \'אהבתי\'</string>
+    <string name="removed_from_youtube_liked">הוסר מיוטיוב \'אהבתי\'</string>
     <string name="home_limit">אחזר מגבלת נתונים מהבית</string>
     <string name="no_album">אין אלבום</string>
-    <string name="app_widget_description">ווידג'ט לנגן</string>
+    <string name="app_widget_description">ווידג\'ט לנגן</string>
     <string name="guide_miniplayer_content">החלק כדי להציג את לחצן דילוג וסגירה</string>
     <string name="guide_suggest_content">הצג שירים מוצעים מאת AI בהתבסס על רשימת ההשמעה שלך</string>
-    <string name="guide_liked_title">הוסף לרשימת השמעה 'אהבתי' של יוטיוב</string>
+    <string name="guide_liked_title">הוסף לרשימת השמעה \'אהבתי\' של יוטיוב</string>
     <string name="log_out_from_spotify">התנתק מספוטיפיי</string>
     <string name="delete">מחק</string>
     <string name="top_videos">סרטונים מובילים</string>

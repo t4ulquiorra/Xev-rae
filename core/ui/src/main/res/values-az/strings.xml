@@ -230,7 +230,7 @@
     <string name="log_in_to_get_YouTube_playlist">YouTube Pleylisti əldə etmək üçün daxil ol</string>
     <string name="sync_playlist_warning">Xevrae birbaşa YouTube Musiqi Pleylistini yaradacaq. Əminsiniz?</string>
     <string name="syncing">Sinxronlaşdırılır</string>
-    <string name="unsync_playlist_warning">"Bu pleylist sinxronizasiya edilsin? Bu pleylist YouTube Music-dən silinməyəcək "</string>
+    <string name="unsync_playlist_warning">Bu pleylist sinxronizasiya edilsin? Bu pleylist YouTube Music-dən silinməyəcək </string>
     <string name="unsyncing">Sinxronizasiyasız</string>
     <string name="added_to_youtube_playlist">YouTube Pleylistinə Əlavə Edildi</string>
     <string name="removed_from_YouTube_playlist">YouTube Pleylistindən Silindi</string>
@@ -378,6 +378,6 @@
     <string name="downloading_audio">Səs endirilir: %1$s </string>
     <string name="downloading_video">Video endirilir: %1$s </string>
     <string name="ok">Oldu</string>
-    <string name="to_download_folder">" bu endirmə qovluğuna"</string>
+    <string name="to_download_folder"> bu endirmə qovluğuna</string>
     <string name="download_speed">Yüklənmə sürəti: %1$s </string>
 </resources>

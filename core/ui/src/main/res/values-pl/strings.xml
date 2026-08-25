@@ -239,7 +239,7 @@
     <string name="log_in_to_get_YouTube_playlist">Zaloguj się, aby pobrać playlistę YouTube</string>
     <string name="sync_playlist_warning">Xevrae automatycznie utworzy listę odtwarzania muzyki YouTube. Jesteś pewny?</string>
     <string name="syncing">Synchronizuję</string>
-    <string name="unsync_playlist_warning">"Odsynchronizować tą playlistę? Ta playlista nie zostanie usunięta z YouTube Music "</string>
+    <string name="unsync_playlist_warning">Odsynchronizować tą playlistę? Ta playlista nie zostanie usunięta z YouTube Music </string>
     <string name="unsyncing">Odsynchronizowanie</string>
     <string name="added_to_youtube_playlist">Dodano do playlisty YouTube</string>
     <string name="removed_from_YouTube_playlist">Usunięto z playlisty YouTube</string>
@@ -396,7 +396,7 @@
     <string name="downloading_audio">Pobieranie audio: %1$s </string>
     <string name="downloading_video">Pobieranie wideo: %1$s </string>
     <string name="ok">Ok</string>
-    <string name="to_download_folder">" do folderu Pobrane"</string>
+    <string name="to_download_folder"> do folderu Pobrane</string>
     <string name="download_speed">Prędkość pobierania:  %1$s </string>
     <string name="shuffle">Losuj</string>
     <string name="other_version">Inne wersje</string>
@@ -404,7 +404,7 @@
     <string name="give_a_star">Daj gwiazdkę</string>
     <string name="enjoying_xevrae">Ciesz się Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Jeśli lubisz używać Xevrae, zostaw gwiazdkę na GitHub lub zostaw recenzję na</string>
-    <string name="if_you_love_my_work_consider">"Jeśli kochasz moją pracę, rozważ "</string>
+    <string name="if_you_love_my_work_consider">Jeśli kochasz moją pracę, rozważ </string>
     <string name="buying_me_a_coffee">postawienie mi kawy.</string>
     <string name="fade_audio_effect">Efekt zanikania dźwięku</string>
     <string name="disabled">Wyłącz</string>

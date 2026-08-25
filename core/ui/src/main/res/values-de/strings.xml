@@ -242,7 +242,7 @@
     <string name="log_in_to_get_YouTube_playlist">Melde dich an, um die YouTube-Playlist zu erhalten</string>
     <string name="sync_playlist_warning">Xevrae erstellt automatisch eine YouTube Music-Playlist. Bist du dir sicher?</string>
     <string name="syncing">Synchronisierung</string>
-    <string name="unsync_playlist_warning">"Synchronisierung dieser Playlist aufheben? Diese Playlist wird nicht aus YouTube Music entfernt"</string>
+    <string name="unsync_playlist_warning">Synchronisierung dieser Playlist aufheben? Diese Playlist wird nicht aus YouTube Music entfernt</string>
     <string name="unsyncing">Synchronisierung wird aufgehoben</string>
     <string name="added_to_youtube_playlist">Zur YouTube-Playlist hinzugefügt</string>
     <string name="removed_from_YouTube_playlist">Aus der YouTube-Playlist entfernt</string>
@@ -393,13 +393,13 @@
     <string name="playback_speed">Wiedergabegeschwindigkeit</string>
     <string name="pitch">Tonhöhe</string>
     <string name="blur_player_background">Player Hintergrund verwischen</string>
-    <string name="blur_player_background_description">Verwischt den Hintergrund des ''spielt gerade'' Bildschirmeffekts</string>
+    <string name="blur_player_background_description">Verwischt den Hintergrund des \'\'spielt gerade\'\' Bildschirmeffekts</string>
     <string name="merging_audio_and_video">Audio und Video zusammenfügen</string>
     <string name="error_occurred">Es ist ein Fehler aufgetreten</string>
     <string name="downloading_audio">Audio wird heruntergeladen: %1$s </string>
     <string name="downloading_video">Video wird heruntergeladen: %1$s </string>
     <string name="ok">Okay</string>
-    <string name="to_download_folder">" Zum Download Ordner"</string>
+    <string name="to_download_folder"> Zum Download Ordner</string>
     <string name="download_speed">Downloadgeschwindigkeit:  %1$s </string>
     <string name="shuffle">Zufällig</string>
     <string name="other_version">Andere Version</string>
@@ -407,7 +407,7 @@
     <string name="give_a_star">Gebe einen Stern</string>
     <string name="enjoying_xevrae">Spaß an Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Wenn dir Xevrae gefällt, gib Xevrae einen Stern auf Github oder lasse eine Rezension da</string>
-    <string name="if_you_love_my_work_consider">"Wenn Sie meine Arbeit lieben, denken Sie darüber nach "</string>
+    <string name="if_you_love_my_work_consider">Wenn Sie meine Arbeit lieben, denken Sie darüber nach </string>
     <string name="buying_me_a_coffee">Mir einen Kaffee zu kaufen.</string>
     <string name="fade_audio_effect">Fade Audioeffekt</string>
     <string name="disabled">Deaktivieren</string>

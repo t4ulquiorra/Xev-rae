@@ -238,7 +238,7 @@
     <string name="log_in_to_get_YouTube_playlist">登录以获取 YouTube 歌单</string>
     <string name="sync_playlist_warning">Xevrae 将自动创建 YouTube 音乐歌单。确定吗？</string>
     <string name="syncing">同步中</string>
-    <string name="unsync_playlist_warning">"取消同步此歌单吗？此歌单将不会从 YouTube Music 中删除 "</string>
+    <string name="unsync_playlist_warning">取消同步此歌单吗？此歌单将不会从 YouTube Music 中删除 </string>
     <string name="unsyncing">取消同步中</string>
     <string name="added_to_youtube_playlist">已添加到 YouTube 歌单</string>
     <string name="removed_from_YouTube_playlist">已从 YouTube 歌单中移除</string>
@@ -379,7 +379,7 @@
     <string name="playback_speed">播放速度</string>
     <string name="blur_player_background">播放界面背景模糊</string>
     <string name="other_version">其他版本</string>
-    <string name="if_you_love_my_work_consider">"如果你喜欢我的工作，请考虑： "</string>
+    <string name="if_you_love_my_work_consider">如果你喜欢我的工作，请考虑： </string>
     <string name="fade_audio_effect">音频淡入淡出</string>
     <string name="disabled">停用</string>
     <string name="invalid_number"></string>

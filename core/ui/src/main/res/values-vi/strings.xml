@@ -242,7 +242,7 @@
     <string name="log_in_to_get_YouTube_playlist">Đăng nhập để tải danh sách phát YouTube của bạn</string>
     <string name="sync_playlist_warning">Xevrae sẽ tự động tạo một danh sách phát trên YouTube Music. Bạn có chắc chắn?</string>
     <string name="syncing">Đang đồng bộ</string>
-    <string name="unsync_playlist_warning">"Huỷ đồng bộ danh sách phát này? Điều này sẽ không xoá danh sách phát này trên YouTube Music"</string>
+    <string name="unsync_playlist_warning">Huỷ đồng bộ danh sách phát này? Điều này sẽ không xoá danh sách phát này trên YouTube Music</string>
     <string name="unsyncing">Đang huỷ đồng bộ</string>
     <string name="added_to_youtube_playlist">Đã thêm vào danh sách phát YouTube</string>
     <string name="removed_from_YouTube_playlist">Đã xoá khỏi danh sách phát YouTube</string>
@@ -398,7 +398,7 @@
     <string name="downloading_audio">Đang tải xuống âm thanh: %1$s </string>
     <string name="downloading_video">Đang tải xuống video: %1$s </string>
     <string name="ok">OK</string>
-    <string name="to_download_folder">" vào thư mục Tải xuống"</string>
+    <string name="to_download_folder"> vào thư mục Tải xuống</string>
     <string name="download_speed">Tốc độ tải xuống: %1$s </string>
     <string name="shuffle">Trộn bài</string>
     <string name="other_version">Phiên bản khác</string>
@@ -406,7 +406,7 @@
     <string name="give_a_star">Tặng một sao</string>
     <string name="enjoying_xevrae">Yêu thích Xevrae</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Nếu bạn yêu thích Xevrae, sao Xevrae trên GitHub hoặc để lại một đánh giá trên</string>
-    <string name="if_you_love_my_work_consider">"Nếu bạn cảm thấy yêu thích những gì tôi làm, có thể "</string>
+    <string name="if_you_love_my_work_consider">Nếu bạn cảm thấy yêu thích những gì tôi làm, có thể </string>
     <string name="buying_me_a_coffee">mua cho tôi một ly cà phê.</string>
     <string name="fade_audio_effect">Hiệu ứng làm mờ âm thanh</string>
     <string name="disabled">Tắt</string>

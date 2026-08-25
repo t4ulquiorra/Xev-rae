@@ -229,7 +229,7 @@
     <string name="log_in_to_get_YouTube_playlist">Kirjaudu sisään saadaksesi YouTube-soittolistan</string>
     <string name="sync_playlist_warning">Xevrae luo YouTube Musiciin soittolistan automaattisesti. Haluatko jatkaa?</string>
     <string name="syncing">Synkronoidaan</string>
-    <string name="unsync_playlist_warning">"Poistetaanko soittolistan synkronointi käytöstä? Tätä soittolistaa ei poisteta YouTube Musicista "</string>
+    <string name="unsync_playlist_warning">Poistetaanko soittolistan synkronointi käytöstä? Tätä soittolistaa ei poisteta YouTube Musicista </string>
     <string name="unsyncing">Synkronointia poistetaan</string>
     <string name="added_to_youtube_playlist">Lisätty YouTube-soittolistaan</string>
     <string name="removed_from_YouTube_playlist">Poistettu YouTube-soittolistalta</string>

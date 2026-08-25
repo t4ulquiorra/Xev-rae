@@ -239,7 +239,7 @@
     <string name="log_in_to_get_YouTube_playlist">로그인하여 YouTube 재생목록 불러오기</string>
     <string name="sync_playlist_warning">Xevrae이 YouTube Music 재생목록을 자동으로 생성합니다. 확실하십니까?</string>
     <string name="syncing">동기화 중</string>
-    <string name="unsync_playlist_warning">"이 재생목록의 동기화를 해제합니까? YouTube Music에서 이 재생목록이 제거되지 않습니다 "</string>
+    <string name="unsync_playlist_warning">이 재생목록의 동기화를 해제합니까? YouTube Music에서 이 재생목록이 제거되지 않습니다 </string>
     <string name="unsyncing">동기화 해제 중</string>
     <string name="added_to_youtube_playlist">YouTube 재생목록에 추가 완료</string>
     <string name="removed_from_YouTube_playlist">YouTube 재생목록에서 제거 완료</string>
@@ -393,7 +393,7 @@
     <string name="downloading_audio">오디오 다운로드 중: %1$s </string>
     <string name="downloading_video">동영상 다운로드 중: %1$s </string>
     <string name="ok">확인</string>
-    <string name="to_download_folder">" 다운로드 폴더로"</string>
+    <string name="to_download_folder"> 다운로드 폴더로</string>
     <string name="download_speed">다운로드 속도:  %1$s </string>
     <string name="shuffle">셔플</string>
     <string name="other_version">다른 버전</string>
@@ -401,7 +401,7 @@
     <string name="give_a_star">별 주기</string>
     <string name="enjoying_xevrae">Xevrae을 즐기고 계신가요</string>
     <string name="if_you_enjoy_using_xevrae_star_xevrae_on_github_or_leave_a_review_on">Xevrae을 잘 이용하고 계신다면, GitHub에서 Xevrae에 별을 주거나 리뷰를 남겨주세요</string>
-    <string name="if_you_love_my_work_consider">"앱이 마음에 드시면, "</string>
+    <string name="if_you_love_my_work_consider">앱이 마음에 드시면, </string>
     <string name="buying_me_a_coffee">커피 한 잔으로 응원해주세요.</string>
     <string name="fade_audio_effect">음향 페이드 효과</string>
     <string name="disabled">사용 안 함</string>
