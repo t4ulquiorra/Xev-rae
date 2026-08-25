@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.protobuf)
 }
 
 android {
-    namespace = "com.xevrae.android.service.listentogether"
+    namespace = "com.xevrae.listentogether"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {
@@ -14,12 +14,22 @@ android {
     }
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") { option("lite") }
+            }
+        }
+    }
+}
+
 dependencies {
-    implementation(projects.core.common)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(project(":core:common"))
+    implementation(libs.protobuf.javalite)
+    implementation(libs.okhttp3)
     implementation(libs.coroutines.android)
 }

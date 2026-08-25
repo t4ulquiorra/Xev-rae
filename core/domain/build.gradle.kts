@@ -24,4 +24,5 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.kotlinx.datetime)
     implementation(libs.paging.common)
+    implementation(libs.room.runtime)
 }

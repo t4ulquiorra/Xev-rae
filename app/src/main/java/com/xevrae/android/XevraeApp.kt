@@ -1,7 +1,13 @@
 package com.xevrae.android
 
 import android.app.Application
+import com.xevrae.common.ContextHolder
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class XevraeApp : Application()
+class XevraeApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ContextHolder.context = this
+    }
+}

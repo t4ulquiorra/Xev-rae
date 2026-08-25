@@ -27,4 +27,6 @@ dependencies {
     implementation(libs.sqlite.bundled)
     ksp(libs.room.compiler)
     implementation(libs.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
 }

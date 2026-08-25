@@ -26,4 +26,7 @@ dependencies {
     implementation(libs.brotli.dec)
     implementation(libs.ksoup.html)
     implementation(libs.ksoup.entities)
+    implementation(libs.ffmpeg.kit.audio)
+    implementation(libs.newpipe.extractor)
+    implementation(libs.okio)
 }
