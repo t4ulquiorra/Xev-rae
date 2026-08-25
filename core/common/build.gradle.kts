@@ -18,5 +18,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.datetime)
     implementation(libs.coroutines.android)
-    implementation(libs.kermit.logging)
+    implementation(libs.kermit)
 }
