@@ -1355,7 +1355,7 @@ internal class CrossfadeExoPlayerAdapter(
                             val resumePositionMs = cachedPosition.coerceAtLeast(0L)
                             // Notify UI that buffering/recovery is in progress
                             listeners.forEach { it.onIsLoadingChanged(true) }
-                            transitionToState(InternalState.BUFFERING)
+                            transitionToState(InternalState.PREPARING)
                             coroutineScope.launch {
                                 try {
                                     // Invalidate cached format so ResolvingDataSource fetches a fresh URL
