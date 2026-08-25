@@ -15,11 +15,15 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.common)
+    implementation(project(":core:common"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:network"))
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.encoding)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ksoup.entities)
     implementation(libs.coroutines.android)
 }
