@@ -9,5 +9,6 @@ class XevraeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         ContextHolder.context = this
+        com.xevrae.ui.AppGlobalContext.init(this)
     }
 }

@@ -41,6 +41,7 @@ include(":core:media")
 include(":core:network")
 include(":core:crashlytics")
 include(":core:crashlytics-noop")
+include(":core:ui")
 
 // Feature modules
 include(":feature:home")

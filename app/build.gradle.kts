@@ -98,6 +98,7 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.network)
     implementation(projects.core.media)
+    implementation(project(":core:ui"))
 
     // Flavor specific dependencies
     "fullImplementation"(project(":core:crashlytics"))
