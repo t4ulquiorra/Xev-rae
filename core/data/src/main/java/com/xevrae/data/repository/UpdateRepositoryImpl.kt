@@ -45,7 +45,7 @@ class UpdateRepositoryImpl(
                                 body =
                                     $$"""
                                     ### Update via F-Droid, changelogs: 
-                                    - https://github.com/xevrae-dev/Xevrae/blob/dev/fastlane/metadata/android/en-US/changelogs/$${latestVersion.versionCode}.txt
+                                    - https://github.com/maxrave-dev/SimpMusic/blob/dev/fastlane/metadata/android/en-US/changelogs/$${latestVersion.versionCode}.txt
                                     """.trimIndent(),
                             ),
                         ),

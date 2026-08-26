@@ -21,16 +21,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
+/**
+ * One resolved category cover plus when it was fetched.
+ *
+ * Kept with a timestamp because the cover is whatever playlist YouTube happened to rank first in
+ * that category — it drifts, so a cached copy should expire rather than stick forever.
+ */
 @Serializable
 private data class MoodArtwork(
     val url: String,
@@ -47,11 +50,15 @@ class HomeRepositoryImpl(
     private val dataStoreManager: DataStoreManager,
     private val youTube: YouTube,
 ) : HomeRepository {
+    /**
+     * Same posture as the Room converters: a cache written by an older build must not crash the
+     * app after the model gains a field, so unknown keys are dropped rather than rejected.
+     */
     private val moodJson =
         Json {
             ignoreUnknownKeys = true
-            encodeDefaults = true
         }
+
     override fun getHomeData(
         params: String?,
         viewString: String,
@@ -275,6 +282,9 @@ class HomeRepositoryImpl(
 
     override fun getMoodAndMomentsData(): Flow<Resource<Mood>> =
         flow {
+            // Serve the cached copy first so the grid paints instantly; the network result is
+            // emitted right after and overwrites it. The category list changes about as often as
+            // YouTube ships a new mood, so a stale frame costs nothing while a spinner does.
             val cached =
                 dataStoreManager.moodAndGenresCache
                     .first()
@@ -286,6 +296,9 @@ class HomeRepositoryImpl(
                 youTube
                     .moodAndGenres()
                     .onSuccess { result ->
+                        // Every section is kept, in the order YouTube sent it, under its own
+                        // title. Indexing result[0]/result[1] used to break the moment a
+                        // signed-in account got an extra "For you" section in front.
                         val sections =
                             result.map { section ->
                                 MoodSection(
@@ -304,6 +317,8 @@ class HomeRepositoryImpl(
                         emit(Resource.Success<Mood>(mood))
                         dataStoreManager.setMoodAndGenresCache(moodJson.encodeToString(mood))
                     }.onFailure { e ->
+                        // Already showing the cached copy — surfacing an error over it would
+                        // replace working content with an error state.
                         if (cached == null) {
                             emit(Resource.Error<Mood>(e.message.toString()))
                         }
@@ -311,35 +326,12 @@ class HomeRepositoryImpl(
             }
         }.flowOn(Dispatchers.IO)
 
-    private val artworkCacheMutex = Mutex()
-    private var memoryArtworkCache: Map<String, MoodArtwork>? = null
-
-    private suspend fun getArtworkFromCache(params: String): String? =
-        artworkCacheMutex.withLock {
-            val cache = memoryArtworkCache ?: readMoodArtworkCache().also { memoryArtworkCache = it }
-            val hit = cache[params]
-            if (hit != null && !hit.isStale()) {
-                hit.url
-            } else {
-                null
-            }
-        }
-
-    private suspend fun saveMoodArtwork(params: String, url: String) {
-        val entry = MoodArtwork(url, Clock.System.now().toEpochMilliseconds())
-        artworkCacheMutex.withLock {
-            val currentCache = memoryArtworkCache ?: readMoodArtworkCache()
-            val updated = currentCache + (params to entry)
-            memoryArtworkCache = updated
-            dataStoreManager.setMoodArtworkCache(moodJson.encodeToString(updated))
-        }
-    }
-
     override fun getMoodCategoryArtwork(params: String): Flow<String?> =
         flow {
-            val cachedUrl = getArtworkFromCache(params)
-            if (cachedUrl != null) {
-                emit(cachedUrl)
+            val cache = readMoodArtworkCache()
+            val hit = cache[params]
+            if (hit != null && !hit.isStale()) {
+                emit(hit.url)
                 return@flow
             }
             val resolved =
@@ -356,7 +348,11 @@ class HomeRepositoryImpl(
                     }
             emit(resolved)
             if (resolved != null) {
-                saveMoodArtwork(params, resolved)
+                dataStoreManager.setMoodArtworkCache(
+                    moodJson.encodeToString(
+                        cache + (params to MoodArtwork(resolved, Clock.System.now().toEpochMilliseconds())),
+                    ),
+                )
             }
         }.flowOn(Dispatchers.IO)
 

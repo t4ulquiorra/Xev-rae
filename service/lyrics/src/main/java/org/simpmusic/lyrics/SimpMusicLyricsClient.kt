@@ -1,28 +1,30 @@
-package org.xevrae.lyrics
+package org.simpmusic.lyrics
 
 import com.xevrae.ktorext.crypto.Hmac
 import com.xevrae.ktorext.crypto.HmacUri
 import com.xevrae.logger.Logger
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
-import org.xevrae.lyrics.models.request.LyricsBody
-import org.xevrae.lyrics.models.request.TranslatedLyricsBody
-import org.xevrae.lyrics.models.response.BaseResponse
-import org.xevrae.lyrics.models.response.BetterLyricsResponse
-import org.xevrae.lyrics.models.response.LrclibObject
-import org.xevrae.lyrics.models.response.LyricsResponse
-import org.xevrae.lyrics.models.response.TranslatedLyricsResponse
-import org.xevrae.lyrics.parser.parseSyncedLyrics
-import org.xevrae.lyrics.parser.parseUnsyncedLyrics
+import org.simpmusic.lyrics.am.AMArtistResource
+import org.simpmusic.lyrics.am.AMSearchResponse
+import org.simpmusic.lyrics.models.request.LyricsBody
+import org.simpmusic.lyrics.models.request.TranslatedLyricsBody
+import org.simpmusic.lyrics.models.response.BaseResponse
+import org.simpmusic.lyrics.models.response.BetterLyricsResponse
+import org.simpmusic.lyrics.models.response.LrclibObject
+import org.simpmusic.lyrics.models.response.LyricsResponse
+import org.simpmusic.lyrics.models.response.TranslatedLyricsResponse
+import org.simpmusic.lyrics.parser.parseSyncedLyrics
+import org.simpmusic.lyrics.parser.parseUnsyncedLyrics
 import kotlin.math.abs
 
-private const val TAG = "XevraeLyricsClient"
+private const val TAG = "SimpMusicLyricsClient"
 
-class XevraeLyricsClient {
+class SimpMusicLyricsClient {
     private val algorithm = ""
 
-    private val hmacService = Hmac("HmacSHA256", "xevrae-lyrics")
-    private val lyricsService = XevraeLyrics()
+    private val hmacService = Hmac("HmacSHA256", "simpmusic-lyrics")
+    private val lyricsService = SimpMusicLyrics()
     private var insertingLyrics: Pair<String?, Boolean> = (null to false)
     private val isInsertingLyrics: Boolean
         get() = insertingLyrics.second
@@ -151,6 +153,42 @@ class XevraeLyricsClient {
                 ).body<BetterLyricsResponse>()
         rs.ttml
     }
+
+    suspend fun searchAMArtist(
+        name: String,
+        limit: Int = 5,
+    ): Result<List<AMArtistResource>> =
+        runCatching {
+            val response = lyricsService.searchAMArtist(name, limit)
+            if (response.status.value !in 200..299) {
+                throw Exception("AM search failed: ${response.status.value}")
+            }
+            val parsed = response.body<AMSearchResponse>()
+            val resources = parsed.resources?.artists.orEmpty()
+            // Keep the search ranking from results.data; fall back to the resources map order.
+            parsed.results
+                ?.artists
+                ?.data
+                ?.mapNotNull { resources[it.id] }
+                ?: resources.values.toList()
+        }
+
+    /**
+     * Fetch a single artist by id, including [AMEditorialArtwork] (name-logo PNG) and keyColor.
+     * Returns null when the id is not present in the response.
+     */
+    suspend fun getAMArtist(id: String): Result<AMArtistResource?> =
+        runCatching {
+            val response = lyricsService.getAMArtist(id)
+            if (response.status.value !in 200..299) {
+                throw Exception("AM artist fetch failed: ${response.status.value}")
+            }
+            response
+                .body<AMSearchResponse>()
+                .resources
+                ?.artists
+                ?.get(id)
+        }
 
     private suspend inline fun <reified T> HttpResponse.bodyOrThrow(): T {
         if (this.status.value == 429) {

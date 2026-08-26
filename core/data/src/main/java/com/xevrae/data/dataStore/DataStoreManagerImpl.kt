@@ -33,7 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import com.xevrae.common.QUALITY as COMMON_QUALITY
 
-internal class DataStoreManagerImpl(
+class DataStoreManagerImpl(
     private val settingsDataStore: DataStore<Preferences>,
 ) : DataStoreManager {
     override val appVersion: Flow<String> =
@@ -1632,5 +1632,3 @@ internal class DataStoreManagerImpl(
         val AUTO_BACKUP_LAST_TIME = longPreferencesKey("auto_backup_last_time")
     }
 }
-
-expect fun createDataStoreInstance(): DataStore<Preferences>

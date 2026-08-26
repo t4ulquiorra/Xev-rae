@@ -1,4 +1,4 @@
-package org.xevrae.lyrics.models.response
+package org.simpmusic.lyrics.models.response
 
 import kotlinx.serialization.Serializable
 
@@ -13,6 +13,7 @@ data class LyricsResponse(
     val plainLyric: String,
     val syncedLyrics: String?,
     val richSyncLyrics: String?,
+    val trackType: String?,
     val vote: Int,
     val contributor: String,
     val contributorEmail: String,

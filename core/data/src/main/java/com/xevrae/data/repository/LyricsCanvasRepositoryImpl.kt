@@ -8,9 +8,10 @@ import com.xevrae.data.mapping.toLyrics
 import com.xevrae.domain.data.entities.LyricsEntity
 import com.xevrae.domain.data.entities.TranslatedLyricsEntity
 import com.xevrae.domain.data.model.browse.album.Track
+import com.xevrae.domain.data.model.browse.artist.ArtistLogo
 import com.xevrae.domain.data.model.canvas.CanvasResult
 import com.xevrae.domain.data.model.metadata.Lyrics
-import com.xevrae.domain.data.model.metadata.XevraeLyrics
+import com.xevrae.domain.data.model.metadata.SimpMusicLyrics
 import com.xevrae.domain.extension.now
 import com.xevrae.domain.manager.DataStoreManager
 import com.xevrae.domain.repository.LyricsCanvasRepository
@@ -32,11 +33,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.xevrae.aiservice.AiClient
-import org.xevrae.lyrics.XevraeLyricsClient
-import org.xevrae.lyrics.models.request.LyricsBody
-import org.xevrae.lyrics.models.request.TranslatedLyricsBody
-import org.xevrae.lyrics.parser.parseTtmlLyrics
+import org.simpmusic.aiservice.AiClient
+import org.simpmusic.lyrics.SimpMusicLyricsClient
+import org.simpmusic.lyrics.am.toImageUrl
+import org.simpmusic.lyrics.models.request.LyricsBody
+import org.simpmusic.lyrics.models.request.TranslatedLyricsBody
+import org.simpmusic.lyrics.parser.parseTtmlLyrics
 import kotlin.math.abs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -45,7 +47,7 @@ class LyricsCanvasRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
     private val spotify: Spotify,
-    private val xevraeLyrics: XevraeLyricsClient,
+    private val simpMusicLyrics: SimpMusicLyricsClient,
     private val aiClient: AiClient,
 ) : LyricsCanvasRepository {
     override fun getSavedLyrics(videoId: String): Flow<LyricsEntity?> = flow { emit(localDataSource.getSavedLyrics(videoId)) }.flowOn(Dispatchers.IO)
@@ -391,7 +393,7 @@ class LyricsCanvasRepositoryImpl(
                     ).replace("  ", " ")
                     .replace(Regex("([()])"), "")
                     .replace(".", " ")
-            xevraeLyrics
+            simpMusicLyrics
                 .searchLrclibLyrics(qtrack, qartist, duration)
                 .onSuccess {
                     it?.let { emit(Resource.Success<Lyrics>(it.toLyrics())) }
@@ -430,7 +432,7 @@ class LyricsCanvasRepositoryImpl(
                     ).replace("  ", " ")
                     .replace(Regex("([()])"), "")
                     .replace(".", " ")
-            xevraeLyrics
+            simpMusicLyrics
                 .searchBetterLyrics(qtrack, qartist, duration)
                 .onSuccess { ttml ->
                     if (ttml.isNullOrEmpty()) {
@@ -442,6 +444,48 @@ class LyricsCanvasRepositoryImpl(
                 }.onFailure {
                     it.printStackTrace()
                     emit(Resource.Error<Lyrics>("BetterLyrics search failed"))
+                }
+        }.flowOn(Dispatchers.IO)
+
+    override fun getArtistLogo(artistName: String): Flow<Resource<ArtistLogo>> =
+        flow {
+            simpMusicLyrics
+                .searchAMArtist(artistName, limit = 1)
+                .onSuccess { artists ->
+                    val id = artists.firstOrNull()?.id
+                    if (id == null) {
+                        emit(Resource.Error<ArtistLogo>("Artist not found"))
+                        return@onSuccess
+                    }
+                    simpMusicLyrics
+                        .getAMArtist(id)
+                        .onSuccess { artist ->
+                            val logo = artist?.attributes?.editorialArtwork?.musicContentColorLogoTrimmed
+                            val srcW = logo?.width ?: 0
+                            val srcH = logo?.height ?: 0
+                            // Scale down to ~1000px wide, keeping the logo aspect ratio.
+                            val targetW = 1000
+                            val targetH = if (srcW > 0) (srcH.toLong() * targetW / srcW).toInt() else srcH
+                            val url = logo?.toImageUrl(targetW, targetH)
+                            if (logo == null || url == null) {
+                                emit(Resource.Error<ArtistLogo>("No artist logo"))
+                                return@onSuccess
+                            }
+                            emit(
+                                Resource.Success(
+                                    ArtistLogo(
+                                        logoUrl = url,
+                                        bgColorHex = logo.bgColor,
+                                        width = srcW,
+                                        height = srcH,
+                                    ),
+                                ),
+                            )
+                        }.onFailure {
+                            emit(Resource.Error<ArtistLogo>(it.message ?: "Failed to fetch artist"))
+                        }
+                }.onFailure {
+                    emit(Resource.Error<ArtistLogo>(it.message ?: "Artist search failed"))
                 }
         }.flowOn(Dispatchers.IO)
 
@@ -464,31 +508,31 @@ class LyricsCanvasRepositoryImpl(
             }
         }.flowOn(Dispatchers.IO)
 
-    // Xevrae Lyrics
-    private val xevraeLyricsTag = "XevraeLyricsRepository"
+    // SimpMusic Lyrics
+    private val simpMusicLyricsTag = "SimpMusicLyricsRepository"
 
-    override fun getXevraeLyrics(videoId: String): Flow<Resource<Lyrics>> =
+    override fun getSimpMusicLyrics(videoId: String): Flow<Resource<Lyrics>> =
         flow {
-            xevraeLyrics
+            simpMusicLyrics
                 .getLyrics(videoId)
                 .onSuccess { lyrics ->
-                    Logger.d(xevraeLyricsTag, "Lyrics found: $lyrics")
+                    Logger.d(simpMusicLyricsTag, "Lyrics found: $lyrics")
                     val result = lyrics.firstOrNull()
                     if (result == null) {
-                        Logger.w(xevraeLyricsTag, "No lyrics found for videoId: $videoId")
+                        Logger.w(simpMusicLyricsTag, "No lyrics found for videoId: $videoId")
                         emit(Resource.Error<Lyrics>("No lyrics found"))
                         return@onSuccess
                     }
                     val appLyrics =
                         result.toLyrics()?.copy(
-                            xevraeLyrics =
-                                XevraeLyrics(
+                            simpMusicLyrics =
+                                SimpMusicLyrics(
                                     id = result.id,
                                     vote = result.vote,
                                 ),
                         )
                     if (appLyrics == null) {
-                        Logger.w(xevraeLyricsTag, "Failed to convert lyrics for videoId: $videoId")
+                        Logger.w(simpMusicLyricsTag, "Failed to convert lyrics for videoId: $videoId")
                         emit(Resource.Error<Lyrics>("Failed to convert lyrics"))
                         return@onSuccess
                     }
@@ -498,27 +542,27 @@ class LyricsCanvasRepositoryImpl(
                         ),
                     )
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Get Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Get Lyrics Error: ${it.message}")
                     emit(Resource.Error<Lyrics>(it.message ?: "Failed to get lyrics"))
                 }
         }.flowOn(Dispatchers.IO)
 
-    override fun getXevraeTranslatedLyrics(
+    override fun getSimpMusicTranslatedLyrics(
         videoId: String,
         language: String,
     ): Flow<Resource<Lyrics>> =
         flow {
-            xevraeLyrics
+            simpMusicLyrics
                 .getTranslatedLyrics(videoId, language)
                 .onSuccess { lyrics ->
-                    Logger.d(xevraeLyricsTag, "Translated Lyrics found: ${lyrics.toLyrics()}")
+                    Logger.d(simpMusicLyricsTag, "Translated Lyrics found: ${lyrics.toLyrics()}")
                     emit(
                         Resource.Success<Lyrics>(
                             lyrics
                                 .toLyrics()
                                 .copy(
-                                    xevraeLyrics =
-                                        XevraeLyrics(
+                                    simpMusicLyrics =
+                                        SimpMusicLyrics(
                                             id = lyrics.id,
                                             vote = lyrics.vote,
                                         ),
@@ -526,44 +570,44 @@ class LyricsCanvasRepositoryImpl(
                         ),
                     )
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Get Translated Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Get Translated Lyrics Error: ${it.message}")
                     emit(Resource.Error<Lyrics>(it.message ?: "Failed to get translated lyrics"))
                 }
         }.flowOn(Dispatchers.IO)
 
-    override fun voteXevraeLyrics(
+    override fun voteSimpMusicLyrics(
         lyricsId: String,
         upvote: Boolean,
     ): Flow<Resource<String>> =
         flow {
-            xevraeLyrics
+            simpMusicLyrics
                 .voteLyrics(lyricsId, upvote)
                 .onSuccess {
-                    Logger.d(xevraeLyricsTag, "Vote Lyrics Success: $it")
+                    Logger.d(simpMusicLyricsTag, "Vote Lyrics Success: $it")
                     emit(Resource.Success(it.id))
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Vote Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Vote Lyrics Error: ${it.message}")
                     emit(Resource.Error<String>(it.message ?: "Failed to vote lyrics"))
                 }
         }.flowOn(Dispatchers.IO)
 
-    override fun voteXevraeTranslatedLyrics(
+    override fun voteSimpMusicTranslatedLyrics(
         translatedLyricsId: String,
         upvote: Boolean,
     ): Flow<Resource<String>> =
         flow {
-            xevraeLyrics
+            simpMusicLyrics
                 .voteTranslatedLyrics(translatedLyricsId, upvote)
                 .onSuccess {
-                    Logger.d(xevraeLyricsTag, "Vote Translated Lyrics Success: $it")
+                    Logger.d(simpMusicLyricsTag, "Vote Translated Lyrics Success: $it")
                     emit(Resource.Success(it.id))
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Vote Translated Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Vote Translated Lyrics Error: ${it.message}")
                     emit(Resource.Error<String>(it.message ?: "Failed to vote translated lyrics"))
                 }
         }.flowOn(Dispatchers.IO)
 
-    override fun insertXevraeLyrics(
+    override fun insertSimpMusicLyrics(
         dataStoreManager: DataStoreManager,
         track: Track,
         duration: Int,
@@ -591,7 +635,7 @@ class LyricsCanvasRepositoryImpl(
                     null
                 }
             val (contributorName, contributorEmail) = dataStoreManager.contributorName.first() to dataStoreManager.contributorEmail.first()
-            xevraeLyrics
+            simpMusicLyrics
                 .insertLyrics(
                     LyricsBody(
                         videoId = track.videoId,
@@ -604,17 +648,18 @@ class LyricsCanvasRepositoryImpl(
                         richSyncLyrics = richSyncedLyric,
                         contributor = contributorName,
                         contributorEmail = contributorEmail,
+                        trackType = if (track.thumbnails?.firstOrNull()?.let { it.width == it.height && it.width > 0 } == true) "SONG" else "VIDEO",
                     ),
                 ).onSuccess {
-                    Logger.d(xevraeLyricsTag, "Inserted Lyrics: $it")
+                    Logger.d(simpMusicLyricsTag, "Inserted Lyrics: $it")
                     emit(Resource.Success(it.id))
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Insert Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Insert Lyrics Error: ${it.message}")
                     emit(Resource.Error<String>(it.message ?: "Failed to insert lyrics"))
                 }
         }.flowOn(Dispatchers.IO)
 
-    override fun insertXevraeTranslatedLyrics(
+    override fun insertSimpMusicTranslatedLyrics(
         dataStoreManager: DataStoreManager,
         track: Track,
         translatedLyrics: Lyrics,
@@ -629,7 +674,7 @@ class LyricsCanvasRepositoryImpl(
                 return@flow
             }
             val (contributorName, contributorEmail) = dataStoreManager.contributorName.first() to dataStoreManager.contributorEmail.first()
-            xevraeLyrics
+            simpMusicLyrics
                 .insertTranslatedLyrics(
                     TranslatedLyricsBody(
                         videoId = track.videoId,
@@ -639,10 +684,10 @@ class LyricsCanvasRepositoryImpl(
                         contributorEmail = contributorEmail,
                     ),
                 ).onSuccess {
-                    Logger.d(xevraeLyricsTag, "Inserted Translated Lyrics: $it")
+                    Logger.d(simpMusicLyricsTag, "Inserted Translated Lyrics: $it")
                     emit(Resource.Success(it.id))
                 }.onFailure {
-                    Logger.e(xevraeLyricsTag, "Insert Translated Lyrics Error: ${it.message}")
+                    Logger.e(simpMusicLyricsTag, "Insert Translated Lyrics Error: ${it.message}")
                     emit(Resource.Error<String>(it.message ?: "Failed to insert translated lyrics"))
                 }
         }.flowOn(Dispatchers.IO)

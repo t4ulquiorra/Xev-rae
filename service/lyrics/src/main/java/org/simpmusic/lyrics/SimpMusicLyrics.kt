@@ -1,7 +1,9 @@
-package org.xevrae.lyrics
+package org.simpmusic.lyrics
 
+import com.xevrae.ktorext.curl.CurlLogger
 import com.xevrae.ktorext.encoding.brotli
 import com.xevrae.ktorext.getEngine
+import com.xevrae.logger.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyConfig
 import io.ktor.client.plugins.HttpSend
@@ -18,14 +20,16 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.xevrae.lyrics.models.request.LyricsBody
-import org.xevrae.lyrics.models.request.TranslatedLyricsBody
-import org.xevrae.lyrics.models.request.VoteBody
+import org.simpmusic.lyrics.am.AMTokenManager
+import org.simpmusic.lyrics.models.request.LyricsBody
+import org.simpmusic.lyrics.models.request.TranslatedLyricsBody
+import org.simpmusic.lyrics.models.request.VoteBody
 
-class XevraeLyrics {
+class SimpMusicLyrics {
     private var httpClient = createClient()
     var proxy: ProxyConfig? = null
         set(value) {
@@ -34,13 +38,18 @@ class XevraeLyrics {
             httpClient = createClient()
         }
 
-    private val baseUrl = "https://api-lyrics.xevrae.org/v1/"
+    private val baseUrl = "https://api-lyrics.simpmusic.org/v1/"
+
+    private val amTokenManager = AMTokenManager()
 
     private fun createClient() =
         HttpClient(getEngine()) {
             expectSuccess = false
             followRedirects = true
             install(HttpCache)
+            install(CurlLogger) {
+                logger = { Logger.d("SimpMusicLyrics", it) }
+            }
             install(HttpSend) {
                 maxSendCount = 100
             }
@@ -64,11 +73,11 @@ class XevraeLyrics {
                 deflate(0.8F)
             }
             defaultRequest {
-                url("https://api-lyrics.xevrae.org/v1")
+                url("https://api-lyrics.simpmusic.org/v1")
             }
             if (proxy != null) {
                 engine {
-                    proxy = this@XevraeLyrics.proxy
+                    proxy = this@SimpMusicLyrics.proxy
                 }
             }
         }
@@ -79,7 +88,7 @@ class XevraeLyrics {
     ) {
         headers {
             header(HttpHeaders.Accept, "application/json")
-            header(HttpHeaders.UserAgent, "XevraeLyrics/1.0")
+            header(HttpHeaders.UserAgent, "SimpMusicLyrics/1.0")
             header(HttpHeaders.ContentType, "application/json")
             timestamp?.let {
                 header("X-Timestamp", it)
@@ -87,6 +96,19 @@ class XevraeLyrics {
             hmac?.let {
                 header("X-HMAC", it)
             }
+        }
+    }
+
+    private fun HttpRequestBuilder.buildAMHeaders(token: String) {
+        headers {
+            header("Authorization", "Bearer $token")
+            header("Origin", "https://music.apple.com")
+            header("Referer", "https://music.apple.com/")
+            header(
+                HttpHeaders.UserAgent,
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0",
+            )
+            header(HttpHeaders.Accept, "application/json")
         }
     }
 
@@ -177,5 +199,57 @@ class XevraeLyrics {
         durationSeconds?.let {
             parameter("d", it)
         }
+    }
+
+    suspend fun searchAMArtist(
+        name: String,
+        limit: Int,
+    ): HttpResponse {
+        val response = requestAMSearch(name, limit, amTokenManager.getToken(httpClient))
+        // Expired bearer -> refresh the token once and retry on a fresh request.
+        if (response.status.value == 401) {
+            amTokenManager.clearToken()
+            return requestAMSearch(name, limit, amTokenManager.getToken(httpClient))
+        }
+        return response
+    }
+
+    private suspend fun requestAMSearch(
+        name: String,
+        limit: Int,
+        token: String,
+    ) = httpClient.get("https://amp-api-edge.music.apple.com/v1/catalog/us/search") {
+        parameter("term", name)
+        parameter("types", "artists")
+        parameter("fields[artists]", "url,name,artwork")
+        parameter("art[url]", "f")
+        parameter("format[resources]", "map")
+        parameter("extend", "artistUrl")
+        parameter("l", "en-US")
+        parameter("limit", limit)
+        parameter("platform", "web")
+        buildAMHeaders(token)
+    }
+
+    suspend fun getAMArtist(id: String): HttpResponse {
+        val response = requestAMArtist(id, amTokenManager.getToken(httpClient))
+        // Expired bearer -> refresh the token once and retry on a fresh request.
+        if (response.status.value == 401) {
+            amTokenManager.clearToken()
+            return requestAMArtist(id, amTokenManager.getToken(httpClient))
+        }
+        return response
+    }
+
+    private suspend fun requestAMArtist(
+        id: String,
+        token: String,
+    ) = httpClient.get("https://amp-api.music.apple.com/v1/catalog/us/artists/$id") {
+        parameter("art[url]", "c,f")
+        parameter("extend", "editorialArtwork,hero,keyColor")
+        parameter("format[resources]", "map")
+        parameter("l", "en-US")
+        parameter("platform", "web")
+        buildAMHeaders(token)
     }
 }

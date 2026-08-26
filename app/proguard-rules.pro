@@ -208,6 +208,8 @@
 
 -keep class com.xevrae.kotlinytmusicscraper.** { *; }
 
+-keep class org.simpmusic.lyrics.** { *; }
+-keep class org.simpmusic.aiservice.** { *; }
 -keep class org.xevrae.lyrics.parser.** { *; }
 -keep class org.xevrae.lyrics.models.** { *; }
 -keep class com.xevrae.lyrics.parser.** { *; }

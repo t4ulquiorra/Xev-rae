@@ -1,14 +1,12 @@
-package org.xevrae.lyrics.models.response
+package org.simpmusic.lyrics.models.request
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TranslatedLyricsResponse(
-    val id: String,
+data class TranslatedLyricsBody(
     val videoId: String,
     val translatedLyric: String, // LRC format
     val language: String, // 2-letter code
-    val vote: Int,
     val contributor: String,
     val contributorEmail: String,
 )

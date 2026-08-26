@@ -39,19 +39,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
-
-private const val TAG = "SongRepositoryImpl"
-
 class SongRepositoryImpl(
     private val dataStoreManager: DataStoreManager,
     private val localDataSource: LocalDataSource,
     private val youTube: YouTube,
-    private val downloadHandlerLazy: dagger.Lazy<DownloadHandler>? = null,
-    private val mediaPlayerHandlerLazy: dagger.Lazy<MediaPlayerHandler>? = null,
+    private val downloadHandlerProvider: dagger.Lazy<DownloadHandler>,
+    private val mediaPlayerHandlerProvider: dagger.Lazy<MediaPlayerHandler>,
 ) : SongRepository {
-    private val downloadHandler: DownloadHandler? get() = downloadHandlerLazy?.get()
-    private val mediaPlayerHandler: MediaPlayerHandler? get() = mediaPlayerHandlerLazy?.get()
-
     override fun getAllSongs(limit: Int): Flow<List<SongEntity>> =
         flow {
             emit(localDataSource.getAllSongs(limit))
@@ -119,7 +113,7 @@ class SongRepositoryImpl(
                 }.filter { it.downloadState != DownloadState.STATE_DOWNLOADED }
             Logger.d(TAG, "Auto-download: queueing ${pending.size} liked songs")
             pending.forEach { song ->
-                downloadHandler?.downloadTrack(song.videoId, song.title, song.thumbnails.orEmpty())
+                downloadHandler.downloadTrack(song.videoId, song.title, song.thumbnails.orEmpty())
             }
             pending.size
         }
@@ -186,7 +180,7 @@ class SongRepositoryImpl(
      * order to know the `queue` table is this function's doing and not the user's own saved queue.
      */
     private suspend fun persistLiveQueueBeforeSweep(): Boolean {
-        val liveQueue = mediaPlayerHandler?.queueData?.value?.data?.listTracks.orEmpty()
+        val liveQueue = mediaPlayerHandler.queueData.value?.data?.listTracks.orEmpty()
         if (liveQueue.isEmpty()) return false
         Logger.d(TAG, "Clear history: pinning ${liveQueue.size} queued tracks before the sweep")
         localDataSource.recoverQueue(QueueEntity(listTrack = liveQueue))
@@ -246,6 +240,12 @@ class SongRepositoryImpl(
             localDataSource.resetTotalPlayTime(videoId)
         }
 
+    private val downloadHandler: DownloadHandler
+        get() = downloadHandlerProvider.get()
+
+    private val mediaPlayerHandler: MediaPlayerHandler
+        get() = mediaPlayerHandlerProvider.get()
+
     /**
      * Note the side effect: liking a song can start a download, when the user has asked for that.
      *
@@ -262,9 +262,20 @@ class SongRepositoryImpl(
             val song = localDataSource.getSong(videoId)
             if (song != null && song.downloadState != DownloadState.STATE_DOWNLOADED) {
                 Logger.d(TAG, "Auto-downloading liked song: $videoId")
-                downloadHandler?.downloadTrack(videoId, song.title, song.thumbnails.orEmpty())
+                downloadHandler.downloadTrack(videoId, song.title, song.thumbnails.orEmpty())
             }
         }
+//        if (dataStoreManager.combineLocalAndYouTubeLiked.first() == TRUE) {
+//            if (likeStatus == 1) {
+//                addToYouTubeLiked(videoId).collect { result ->
+//                    Logger.d(TAG, "updateLikeStatus -> addToYouTubeLiked: $result")
+//                }
+//            } else {
+//                removeFromYouTubeLiked(videoId).collect { result ->
+//                    Logger.d(TAG, "updateLikeStatus -> removeFromYouTubeLiked: $result")
+//                }
+//            }
+//        }
     }
 
     override fun updateSongInLibrary(

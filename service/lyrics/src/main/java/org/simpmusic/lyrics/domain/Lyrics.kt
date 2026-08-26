@@ -1,4 +1,4 @@
-package org.xevrae.lyrics.domain
+package org.simpmusic.lyrics.domain
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

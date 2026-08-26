@@ -1,7 +1,7 @@
 package com.xevrae.data.di
 
 import com.xevrae.common.Config
-import com.xevrae.data.mediaservice.createMediaServiceHandler
+import com.xevrae.data.mediaservice.MediaServiceHandlerImpl
 import com.xevrae.domain.manager.DataStoreManager
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
 import com.xevrae.domain.mediaservice.player.MediaPlayerInterface
@@ -32,7 +32,7 @@ object MediaHandlerModule {
         @Named(Config.SERVICE_SCOPE) coroutineScope: CoroutineScope,
         player: MediaPlayerInterface,
     ): MediaPlayerHandler {
-        return createMediaServiceHandler(
+        return MediaServiceHandlerImpl(
             dataStoreManager = dataStoreManager,
             songRepository = songRepository,
             streamRepository = streamRepository,

@@ -42,8 +42,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import org.xevrae.aiservice.AiClient
-import org.xevrae.lyrics.XevraeLyricsClient
+import org.simpmusic.aiservice.AiClient
+import org.simpmusic.lyrics.SimpMusicLyricsClient
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -91,7 +91,6 @@ object RepositoryModule {
             youTube = youTube,
             spotify = spotify,
             aiClient = aiClient,
-            context = context,
         ).apply {
             this.init("${context.filesDir.absolutePath}/ytdlp-cookie.txt", dataStoreManager)
         }
@@ -117,13 +116,13 @@ object RepositoryModule {
         localDataSource: LocalDataSource,
         youTube: YouTube,
         spotify: Spotify,
-        lyricsClient: XevraeLyricsClient,
+        lyricsClient: SimpMusicLyricsClient,
         aiClient: AiClient,
     ): LyricsCanvasRepository = LyricsCanvasRepositoryImpl(
         localDataSource = localDataSource,
         youTube = youTube,
         spotify = spotify,
-        xevraeLyrics = lyricsClient,
+        simpMusicLyrics = lyricsClient,
         aiClient = aiClient,
     )
 
@@ -161,8 +160,8 @@ object RepositoryModule {
         dataStoreManager = dataStoreManager,
         localDataSource = localDataSource,
         youTube = youTube,
-        downloadHandlerLazy = downloadHandlerLazy,
-        mediaPlayerHandlerLazy = mediaPlayerHandlerLazy,
+        downloadHandlerProvider = downloadHandlerLazy,
+        mediaPlayerHandlerProvider = mediaPlayerHandlerLazy,
     )
 
     @Provides

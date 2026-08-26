@@ -27,12 +27,10 @@ import okio.IOException
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
-import org.xevrae.aiservice.AIHost
-import org.xevrae.aiservice.AiClient
+import org.simpmusic.aiservice.AIHost
+import org.simpmusic.aiservice.AiClient
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-
-import android.content.Context
 
 class CommonRepositoryImpl(
     private val coroutineScope: CoroutineScope,
@@ -41,7 +39,6 @@ class CommonRepositoryImpl(
     private val youTube: YouTube,
     private val spotify: Spotify,
     private val aiClient: AiClient,
-    private val context: Context,
 ) : CommonRepository {
     @OptIn(ExperimentalTime::class)
     override fun init(
@@ -158,6 +155,43 @@ class CommonRepositoryImpl(
                         youTube.visitorData = visitorData
                     }
                 }
+            // Observe job: push cached TIDAL credentials from DataStore into YouTube.
+            // Only override when non-blank — credentials are not hard-coded, so an empty cache
+            // just leaves TIDAL disabled until the remote config is fetched.
+            val tidalCredentialJob =
+                launch {
+                    combine(
+                        dataStoreManager.tidalClientId,
+                        dataStoreManager.tidalClientSecret,
+                    ) { id, secret -> id to secret }
+                        .distinctUntilChanged()
+                        .collectLatest { (id, secret) ->
+                            if (id.isNotBlank()) youTube.tidalClientId = id
+                            if (secret.isNotBlank()) youTube.tidalClientSecret = secret
+                        }
+                }
+            // Fetch job: pull the latest TIDAL credentials from GitHub raw on each launch
+            // (async, non-blocking). On success we persist into DataStore; the observe job
+            // above then propagates the new values into YouTube reactively.
+            val tidalRemoteConfigJob =
+                launch {
+                    youTube
+                        .getTidalRemoteConfig()
+                        .onSuccess { config ->
+                            // Persist only non-blank fields so a malformed/partial file never
+                            // wipes a previously cached value. No need to diff against the current
+                            // value — the observe job's distinctUntilChanged already prevents
+                            // redundant pushes into YouTube.
+                            config.tidalClientId
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { dataStoreManager.setTidalClientId(it) }
+                            config.tidalClientSecret
+                                ?.takeIf { it.isNotBlank() }
+                                ?.let { dataStoreManager.setTidalClientSecret(it) }
+                        }.onFailure {
+                            Logger.e("RemoteConfig", "TIDAL remote config fetch failed: ${it.message}")
+                        }
+                }
             val aiClientProviderJob =
                 launch {
                     dataStoreManager.aiProvider.collectLatest { provider ->
@@ -247,8 +281,9 @@ class CommonRepositoryImpl(
         database.close()
     }
 
-    override fun getDatabasePath(): String =
-        context.getDatabasePath(com.xevrae.common.DB_NAME).path
+    override fun getDatabasePath() =
+        com.xevrae.data.db
+            .getDatabasePath()
 
     override suspend fun databaseDaoCheckpoint() = localDataSource.checkpoint()
 
@@ -268,6 +303,11 @@ class CommonRepositoryImpl(
         flow {
             emit(localDataSource.getAllNotification())
         }.flowOn(Dispatchers.IO)
+
+    override suspend fun isNotificationExists(link: String): Boolean =
+        withContext(Dispatchers.IO) {
+            localDataSource.countNotificationByLink(link) > 0
+        }
 
     override suspend fun deleteNotification(id: Long) =
         withContext(Dispatchers.IO) {

@@ -29,11 +29,11 @@ import com.xevrae.kotlinytmusicscraper.models.youtube.Transcript
 import com.xevrae.kotlinytmusicscraper.models.youtube.YouTubeInitialPage
 import com.xevrae.spotify.model.response.spotify.CanvasResponse
 import com.xevrae.spotify.model.response.spotify.SpotifyLyricsResponse
-import org.xevrae.lyrics.models.response.LyricsResponse
-import org.xevrae.lyrics.models.response.TranslatedLyricsResponse
-import org.xevrae.lyrics.parser.parseRichSyncLyrics
-import org.xevrae.lyrics.parser.parseSyncedLyrics
-import org.xevrae.lyrics.parser.parseUnsyncedLyrics
+import org.simpmusic.lyrics.models.response.LyricsResponse
+import org.simpmusic.lyrics.models.response.TranslatedLyricsResponse
+import org.simpmusic.lyrics.parser.parseRichSyncLyrics
+import org.simpmusic.lyrics.parser.parseSyncedLyrics
+import org.simpmusic.lyrics.parser.parseUnsyncedLyrics
 import kotlin.jvm.JvmName
 
 internal fun SongItem.toTrack(): Track =
@@ -48,7 +48,7 @@ internal fun SongItem.toTrack(): Track =
         thumbnails = this.thumbnails?.thumbnails?.toListThumbnail() ?: listOf(),
         title = this.title,
         videoId = this.id,
-        videoType = null,
+        videoType = this.musicVideoType,
         category = null,
         feedbackTokens = null,
         resultType = null,
@@ -67,7 +67,7 @@ internal fun VideoItem.toTrack(): Track =
         thumbnails = this.thumbnails?.thumbnails?.toListThumbnail() ?: listOf(),
         title = this.title,
         videoId = this.id,
-        videoType = null,
+        videoType = this.musicVideoType,
         category = null,
         feedbackTokens = null,
         resultType = null,
@@ -106,7 +106,7 @@ internal fun Track.toSongItemForDownload(): SongItem =
         explicit = this.isExplicit,
     )
 
-internal fun org.xevrae.lyrics.domain.Lyrics.toLyrics(): Lyrics {
+internal fun org.simpmusic.lyrics.domain.Lyrics.toLyrics(): Lyrics {
     val lines: ArrayList<Line> = arrayListOf()
     if (this.lyrics != null) {
         this.lyrics?.lines?.forEach {
@@ -133,13 +133,13 @@ internal fun org.xevrae.lyrics.domain.Lyrics.toLyrics(): Lyrics {
     }
 }
 
-internal fun Lyrics.toLibraryLyrics(): org.xevrae.lyrics.domain.Lyrics =
-    org.xevrae.lyrics.domain.Lyrics(
+internal fun Lyrics.toLibraryLyrics(): org.simpmusic.lyrics.domain.Lyrics =
+    org.simpmusic.lyrics.domain.Lyrics(
         lyrics =
-            org.xevrae.lyrics.domain.Lyrics.LyricsX(
+            org.simpmusic.lyrics.domain.Lyrics.LyricsX(
                 lines =
                     this.lines?.map {
-                        org.xevrae.lyrics.domain.Lyrics.LyricsX.Line(
+                        org.simpmusic.lyrics.domain.Lyrics.LyricsX.Line(
                             endTimeMs = it.endTimeMs,
                             startTimeMs = it.startTimeMs,
                             syllables = listOf(),
@@ -194,7 +194,8 @@ internal fun PipedResponse.toTrack(videoId: String): Track =
             ),
         title = this.title ?: " ",
         videoId = videoId,
-        videoType = "Song",
+        // Piped is not YouTube Music and never reports musicVideoType.
+        videoType = null,
         category = "",
         feedbackTokens = null,
         resultType = null,
@@ -225,7 +226,9 @@ internal fun YouTubeInitialPage.toTrack(): Track {
                 ?.toListThumbnail() ?: listOf(),
         title = initialPage.videoDetails?.title ?: "",
         videoId = initialPage.videoDetails?.videoId ?: "",
-        videoType = "",
+        // The plain-YouTube player response has no musicVideoType; only the YouTube *Music* one
+        // (PlayerResponse.VideoDetails) carries it.
+        videoType = null,
         category = "",
         feedbackTokens = null,
         resultType = "",
@@ -278,7 +281,7 @@ internal fun AlbumItem.toAlbumsResult(): AlbumsResult =
         year = this.year?.toString() ?: "",
     )
 
-// Xevrae Lyrics Extension
+// SimpMusic Lyrics Extension
 internal fun LyricsResponse.toLyrics(): Lyrics? =
     (
         richSyncLyrics?.takeIf { it.isNotEmpty() }?.let {
@@ -325,7 +328,7 @@ internal fun SearchSuggestions.toDomainSearchSuggestions(): com.xevrae.domain.da
                             thumbnails = it.thumbnails?.thumbnails?.toListThumbnail() ?: listOf(),
                             title = it.title,
                             videoId = it.id,
-                            videoType = null,
+                            videoType = it.musicVideoType,
                             year = "",
                         )
                     }
@@ -412,7 +415,7 @@ internal fun SearchSuggestions.toDomainSearchSuggestions(): com.xevrae.domain.da
                             thumbnails = it.thumbnails?.thumbnails?.toListThumbnail() ?: listOf(),
                             title = it.title,
                             videoId = it.id,
-                            videoType = null,
+                            videoType = it.musicVideoType,
                             views = it.view,
                             year = "",
                         )

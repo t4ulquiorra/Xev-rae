@@ -21,8 +21,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
-import org.xevrae.aiservice.AiClient
-import org.xevrae.lyrics.XevraeLyricsClient
+import org.simpmusic.aiservice.AiClient
+import org.simpmusic.lyrics.SimpMusicLyricsClient
 import javax.inject.Singleton
 
 @Module
@@ -79,5 +79,5 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideXevraeLyricsClient(): XevraeLyricsClient = XevraeLyricsClient()
+    fun provideSimpMusicLyricsClient(): SimpMusicLyricsClient = SimpMusicLyricsClient()
 }

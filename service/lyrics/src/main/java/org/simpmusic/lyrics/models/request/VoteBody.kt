@@ -1,4 +1,4 @@
-package org.xevrae.lyrics.models.request
+package org.simpmusic.lyrics.models.request
 
 import kotlinx.serialization.Serializable
 

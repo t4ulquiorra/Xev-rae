@@ -10,6 +10,7 @@ import com.xevrae.domain.utils.Resource
 import com.xevrae.kotlinytmusicscraper.YouTube
 import com.xevrae.logger.Logger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -47,12 +48,33 @@ class ArtistRepositoryImpl(
         )
     }
 
+    override suspend fun updateArtistNameLogo(
+        channelId: String,
+        nameLogoUrl: String?,
+        nameLogoColor: String?,
+    ) = withContext(Dispatchers.IO) {
+        localDataSource.updateArtistNameLogo(channelId, nameLogoUrl, nameLogoColor)
+    }
+
+    /**
+     * Unfollowing also drops what only existed to serve the follow.
+     *
+     * Flipping the flag was all this ever did, so an artist's notifications and their new-releases
+     * tracking row survived every unfollow — and once the unfollowed `artist` row is itself swept by
+     * `SongRepository.clearHistoryAndOrphanedSongs`, they have nothing left to point back at.
+     */
     override suspend fun updateFollowedStatus(
         channelId: String,
         followedStatus: Int,
     ) = withContext(
         Dispatchers.Main,
-    ) { localDataSource.updateFollowed(followedStatus, channelId) }
+    ) {
+        localDataSource.updateFollowed(followedStatus, channelId)
+        if (followedStatus == 0) {
+            localDataSource.deleteNotificationsByChannelId(channelId)
+            localDataSource.deleteFollowedArtistSingleAndAlbum(channelId)
+        }
+    }
 
     override fun getFollowedArtists(): Flow<List<ArtistEntity>> =
         flow {
