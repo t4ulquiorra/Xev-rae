@@ -102,11 +102,10 @@ import com.xevrae.utils.VersionManager
 import com.xevrae.viewModel.SharedViewModel
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.HazeMaterials
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.rememberHazeState
+import android.os.Build
+import android.graphics.RenderEffect
+import android.graphics.Shader
+
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -178,10 +177,6 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
         mutableStateOf(false)
     }
 
-    val hazeState =
-        rememberHazeState(
-            blurEnabled = true,
-        )
 
     LaunchedEffect(nowPlayingData) {
         isShowMiniPlayer = !(nowPlayingData?.mediaItem == null || nowPlayingData?.mediaItem == GenericMediaItem.EMPTY)
@@ -517,7 +512,20 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                                             } else {
                                                 Modifier
                                             },
-                                        ).hazeSource(hazeState),
+                                        ).then(
+                                             // Native blur behind the sidebar — API 31+ only.
+                                             // Scales from 0 (fully closed) to 20dp blur radius (fully open).
+                                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && leftPanelProgress.value > 0f) {
+                                                 val blurPx = leftPanelProgress.value * 50f // 50px max blur at progress=1
+                                                 Modifier.graphicsLayer {
+                                                     renderEffect = RenderEffect.createBlurEffect(
+                                                         blurPx, blurPx, Shader.TileMode.CLAMP
+                                                     )
+                                                 }
+                                             } else {
+                                                 Modifier
+                                             },
+                                         ),
                                 ) {
                                     AppNavigationGraph(
                                         innerPadding = innerPadding,
@@ -670,14 +678,19 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                         Box(
                             Modifier
                                 .fillMaxSize()
-                                .hazeEffect(
-                                    state = hazeState,
-                                    style = HazeStyle(
-                                        blurRadius = 20.dp * leftPanelProgress.value,
-                                        tint = null,
-                                    ),
+                                .background(
+                                    // On API 31+: content box already has RenderEffect blur applied,
+                                    // so a moderate dim scrim is sufficient here.
+                                    // On API < 31: RenderEffect is unavailable, so we deepen the dim
+                                    // to compensate (simulate blur visually through stronger darkening).
+                                    Color.Black.copy(
+                                        alpha = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                            0.35f * leftPanelProgress.value   // light dim — blur does the heavy lifting
+                                        } else {
+                                            0.65f * leftPanelProgress.value   // deeper dim fallback on API < 31
+                                        }
+                                    )
                                 )
-                                .background(Color.Black.copy(alpha = 0.5f * leftPanelProgress.value))
                                 .pointerInput(Unit) {
                                     detectTapGestures {
                                         coroutineScope.launch {
