@@ -239,6 +239,12 @@ import kotlin.math.roundToLong
 private const val TAG = "NowPlayingScreen"
 private val RICH_SYNC_TIMESTAMP_REGEX = Regex("""<\d{2}:\d{2}\.\d{2,3}>\s*""")
 
+/**
+ * Maximum opacity of the dark scrim overlay behind [NowPlayingScreen] when fully expanded.
+ * Configurable between 0.0f (no dim) and 1.0f (fully black).
+ */
+const val NOW_PLAYING_MAX_SCRIM_ALPHA = 0.65f
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalHazeMaterialsApi::class)
 @ExperimentalMaterial3Api
 @Composable
@@ -260,6 +266,22 @@ fun NowPlayingScreen(
         }
     }
 
+    // Dynamic dimming scrim: tracks live expansion progress (0f collapsed/hidden -> 1f fully expanded)
+    // during both finger drag gestures and animated open/close transitions.
+    val density = LocalDensity.current
+    val screenInfo = getScreenSizeInfo()
+    val screenHeightPx = with(density) { screenInfo.hDP.dp.toPx() }
+    val rawOffset = runCatching { sheetState.requireOffset() }.getOrNull()
+    val expansionProgress = when {
+        sheetState.currentValue == SheetValue.Expanded && !sheetState.isScrollInProgress -> 1f
+        rawOffset != null && screenHeightPx > 0f -> {
+            (1f - (rawOffset / screenHeightPx)).coerceIn(0f, 1f)
+        }
+        sheetState.targetValue == SheetValue.Expanded -> 1f
+        else -> 0f
+    }
+    val liveScrimColor = Color.Black.copy(alpha = NOW_PLAYING_MAX_SCRIM_ALPHA * expansionProgress)
+
     ModalBottomSheet(
         modifier =
             Modifier
@@ -272,7 +294,7 @@ fun NowPlayingScreen(
         },
         containerColor = Color(0xFF121212),
         dragHandle = {},
-        scrimColor = Color(0xFF121212),
+        scrimColor = liveScrimColor,
         sheetState = sheetState,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
         shape = RoundedCornerShape(16.dp),
