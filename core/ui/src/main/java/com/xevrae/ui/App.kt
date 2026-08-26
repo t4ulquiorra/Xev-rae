@@ -346,6 +346,13 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
             animationSpec = tween(300),
         )
     }
+    val nowPlayingProgress = remember { androidx.compose.animation.core.Animatable(if (isShowNowPlaylistScreen) 1f else 0f) }
+    LaunchedEffect(isShowNowPlaylistScreen) {
+        nowPlayingProgress.animateTo(
+            targetValue = if (isShowNowPlaylistScreen) 1f else 0f,
+            animationSpec = tween(300),
+        )
+    }
     val navBarStartPad = if (isTabletLandscape) screenWidthDp * 0.25f * leftPanelProgress.value else 0.dp
     val nowPlayingPanelWidth = screenWidthDp * 0.32f
     val miniPlayerPanelWidth = screenWidthDp * 0.32f
@@ -516,8 +523,11 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                                             },
                                         )
                                         .graphicsLayer {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && leftPanelProgress.value > 0f) {
-                                                val blurPx = leftPanelProgress.value * 50f
+                                            val isPortrait = currentOrientation() == Orientation.PORTRAIT
+                                            val npProgress = if (isPortrait) nowPlayingProgress.value else 0f
+                                            val blurProgress = maxOf(leftPanelProgress.value, npProgress)
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && blurProgress > 0f) {
+                                                val blurPx = blurProgress * 50f
                                                 renderEffect = RenderEffect.createBlurEffect(
                                                     blurPx, blurPx, Shader.TileMode.CLAMP
                                                 ).asComposeRenderEffect()
@@ -664,12 +674,34 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                     }
                 }
 
+                if (currentOrientation() == Orientation.PORTRAIT && nowPlayingProgress.value > 0f) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(
+                                Color.Black.copy(
+                                    alpha = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        0.35f * nowPlayingProgress.value
+                                    } else {
+                                        0.65f * nowPlayingProgress.value
+                                    }
+                                )
+                            )
+                    )
+                }
+
                 if (isShowNowPlaylistScreen && !isTabletLandscape) {
                     NowPlayingScreen(
                         navController = navController,
-                    ) {
-                        isShowNowPlaylistScreen = false
-                    }
+                        onProgressChange = { progress ->
+                            coroutineScope.launch {
+                                nowPlayingProgress.snapTo(progress)
+                            }
+                        },
+                        onDismiss = {
+                            isShowNowPlaylistScreen = false
+                        },
+                    )
                 }
 
                 if (!isTabletLandscape && (isShowLeftPanel || leftPanelProgress.value > 0f)) {

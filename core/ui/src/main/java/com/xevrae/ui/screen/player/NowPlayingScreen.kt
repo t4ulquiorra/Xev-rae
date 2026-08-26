@@ -251,6 +251,7 @@ const val NOW_PLAYING_MAX_SCRIM_ALPHA = 0.65f
 fun NowPlayingScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(),
     navController: NavController,
+    onProgressChange: (Float) -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -266,8 +267,8 @@ fun NowPlayingScreen(
         }
     }
 
-    // Dynamic dimming scrim: tracks live expansion progress (0f collapsed/hidden -> 1f fully expanded)
-    // during both finger drag gestures and animated open/close transitions.
+    // Dynamic expansion progress (0f collapsed/hidden -> 1f fully expanded)
+    // reported to parent (App.kt) for synchronized background blur & dim.
     val density = LocalDensity.current
     val screenInfo = getScreenSizeInfo()
     val screenHeightPx = with(density) { screenInfo.hDP.dp.toPx() }
@@ -279,7 +280,10 @@ fun NowPlayingScreen(
         sheetState.targetValue == SheetValue.Expanded -> 1f
         else -> 0f
     }
-    val liveScrimColor = Color.Black.copy(alpha = NOW_PLAYING_MAX_SCRIM_ALPHA * expansionProgress)
+
+    LaunchedEffect(expansionProgress) {
+        onProgressChange(expansionProgress)
+    }
 
     ModalBottomSheet(
         modifier =
@@ -293,7 +297,7 @@ fun NowPlayingScreen(
         },
         containerColor = Color(0xFF121212),
         dragHandle = {},
-        scrimColor = liveScrimColor,
+        scrimColor = Color.Transparent,
         sheetState = sheetState,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
         shape = RoundedCornerShape(16.dp),
