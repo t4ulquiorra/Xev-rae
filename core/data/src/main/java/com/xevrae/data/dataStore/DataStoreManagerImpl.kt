@@ -1512,6 +1512,14 @@ class DataStoreManagerImpl(
             preferences[AUTO_BACKUP_LAST_TIME] ?: 0L
         }
 
+    override suspend fun setAutoBackupLastTime(time: Long) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[AUTO_BACKUP_LAST_TIME] = time
+            }
+        }
+    }
+
     override val prefer320kbpsStream: Flow<String> =
         settingsDataStore.data.map { preferences ->
             preferences[PREFER_320KBPS_STREAM] ?: FALSE
