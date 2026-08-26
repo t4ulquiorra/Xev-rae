@@ -1909,7 +1909,7 @@ class YouTube {
      */
     private suspend fun ensureTidalToken(): String =
         tidalTokenMutex.withLock {
-            val now = Clock.System.now().toEpochMilliseconds()
+            val now = System.currentTimeMillis()
             val cached = tidalAccessToken
             if (cached != null && now < tidalTokenExpiresAt) return@withLock cached
 
