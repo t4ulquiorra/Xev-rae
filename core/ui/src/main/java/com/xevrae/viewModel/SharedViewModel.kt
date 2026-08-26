@@ -1062,21 +1062,21 @@ class SharedViewModel @Inject constructor(
                             dataStoreManager.translationLanguage.first(),
                         )
                         log("Removed out-of-sync translated lyrics for $videoId")
-                        val xevraeLyricsId = lyrics.xevraeLyrics?.id
-                        if (lyricsProvider == LyricsProvider.XEVRAE && !xevraeLyricsId.isNullOrEmpty()) {
+                        val simpMusicLyricsId = lyrics.simpMusicLyrics?.id
+                        if ((lyricsProvider == LyricsProvider.SIMPMUSIC || lyricsProvider == LyricsProvider.XEVRAE) && !simpMusicLyricsId.isNullOrEmpty()) {
                             viewModelScope.launch {
                                 lyricsCanvasRepository
-                                    .voteXevraeTranslatedLyrics(
-                                        translatedLyricsId = xevraeLyricsId,
+                                    .voteSimpMusicTranslatedLyrics(
+                                        translatedLyricsId = simpMusicLyricsId,
                                         false,
                                     ).collectLatest {
                                         when (it) {
                                             is Resource.Error -> {
-                                                Logger.w(tag, "Vote Xevrae Translated Lyrics Error ${it.message}")
+                                                Logger.w(tag, "Vote SimpMusic Translated Lyrics Error ${it.message}")
                                             }
 
                                             is Resource.Success -> {
-                                                Logger.d(tag, "Vote Xevrae Translated Lyrics Success")
+                                                Logger.d(tag, "Vote SimpMusic Translated Lyrics Success")
                                             }
                                         }
                                     }
@@ -1098,20 +1098,21 @@ class SharedViewModel @Inject constructor(
             }
         }
 
-        val shouldSendLyricsToXevrae =
+        val shouldSendLyricsToSimpMusic =
             runBlocking {
                 dataStoreManager.helpBuildLyricsDatabase.first() == TRUE
             } &&
+                lyricsProvider != LyricsProvider.SIMPMUSIC &&
                 lyricsProvider != LyricsProvider.XEVRAE
         if (_nowPlayingState.value?.songEntity?.videoId == videoId) {
             val track = _nowPlayingState.value?.track
             when (isTranslatedLyrics) {
                 true -> {
-                    if (lyricsProvider == LyricsProvider.XEVRAE) {
+                    if (lyricsProvider == LyricsProvider.SIMPMUSIC || lyricsProvider == LyricsProvider.XEVRAE) {
                         _translatedVoteState.value =
                             VoteData(
-                                id = lyrics.xevraeLyrics?.id ?: "",
-                                vote = lyrics.xevraeLyrics?.vote ?: 0,
+                                id = lyrics.simpMusicLyrics?.id ?: "",
+                                vote = lyrics.simpMusicLyrics?.vote ?: 0,
                                 state = VoteState.Idle,
                             )
                     }
@@ -1123,10 +1124,10 @@ class SharedViewModel @Inject constructor(
                                 ),
                         )
                     }
-                    if (shouldSendLyricsToXevrae && track != null) {
+                    if (shouldSendLyricsToSimpMusic && track != null) {
                         viewModelScope.launch {
                             lyricsCanvasRepository
-                                .insertXevraeTranslatedLyrics(
+                                .insertSimpMusicTranslatedLyrics(
                                     dataStoreManager,
                                     track,
                                     lyrics,
@@ -1134,11 +1135,11 @@ class SharedViewModel @Inject constructor(
                                 ).collect {
                                     when (it) {
                                         is Resource.Error -> {
-                                            log("Insert Xevrae Translated Lyrics Error ${it.message}")
+                                            log("Insert SimpMusic Translated Lyrics Error ${it.message}")
                                         }
 
                                         is Resource.Success -> {
-                                            log("Insert Xevrae Translated Lyrics Success")
+                                            log("Insert SimpMusic Translated Lyrics Success")
                                         }
                                     }
                                 }
@@ -1147,11 +1148,11 @@ class SharedViewModel @Inject constructor(
                 }
 
                 false -> {
-                    if (lyricsProvider == LyricsProvider.XEVRAE) {
+                    if (lyricsProvider == LyricsProvider.SIMPMUSIC || lyricsProvider == LyricsProvider.XEVRAE) {
                         _lyricsVoteState.value =
                             VoteData(
-                                id = lyrics.xevraeLyrics?.id ?: "",
-                                vote = lyrics.xevraeLyrics?.vote ?: 0,
+                                id = lyrics.simpMusicLyrics?.id ?: "",
+                                vote = lyrics.simpMusicLyrics?.vote ?: 0,
                                 state = VoteState.Idle,
                             )
                     }
@@ -1175,22 +1176,23 @@ class SharedViewModel @Inject constructor(
                             ),
                         )
                     }
-                    if (shouldSendLyricsToXevrae && track != null) {
+                    if (shouldSendLyricsToSimpMusic && track != null) {
                         viewModelScope.launch {
                             lyricsCanvasRepository
-                                .insertXevraeLyrics(
+                                .insertSimpMusicLyrics(
                                     dataStoreManager,
                                     track,
                                     duration,
                                     lyrics,
+                                    dataStoreManager.translationLanguage.first(),
                                 ).collect {
                                     when (it) {
                                         is Resource.Error -> {
-                                            Logger.w(tag, "Insert Xevrae Lyrics Error ${it.message}")
+                                            Logger.w(tag, "Insert SimpMusic Lyrics Error ${it.message}")
                                         }
 
                                         is Resource.Success -> {
-                                            Logger.d(tag, "Insert Xevrae Lyrics Success")
+                                            Logger.d(tag, "Insert SimpMusic Lyrics Success")
                                         }
                                     }
                                 }
@@ -1227,8 +1229,8 @@ class SharedViewModel @Inject constructor(
             resetLyricsVoteState()
             val lyricsProvider = dataStoreManager.lyricsProvider.first()
             when (lyricsProvider) {
-                DataStoreManager.XEVRAE -> {
-                    getXevraeLyrics(
+                DataStoreManager.SIMPMUSIC, DataStoreManager.XEVRAE -> {
+                    getSimpMusicLyrics(
                         videoId,
                         song,
                         (artist ?: ""),
