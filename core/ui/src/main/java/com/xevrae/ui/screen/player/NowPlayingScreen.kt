@@ -273,7 +273,6 @@ fun NowPlayingScreen(
     val screenHeightPx = with(density) { screenInfo.hDP.dp.toPx() }
     val rawOffset = runCatching { sheetState.requireOffset() }.getOrNull()
     val expansionProgress = when {
-        sheetState.currentValue == SheetValue.Expanded && !sheetState.isScrollInProgress -> 1f
         rawOffset != null && screenHeightPx > 0f -> {
             (1f - (rawOffset / screenHeightPx)).coerceIn(0f, 1f)
         }
