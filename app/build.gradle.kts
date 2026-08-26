@@ -101,6 +101,20 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl
+            if (output != null) {
+                val fileName = output.outputFileName
+                if (fileName.startsWith("app-full-")) {
+                    output.outputFileName = fileName.replace("app-full-", "Xevrae-Full-")
+                } else if (fileName.startsWith("app-foss-")) {
+                    output.outputFileName = fileName.replace("app-foss-", "Xevrae-Foss-")
+                }
+            }
+        }
+    }
 }
 
 dependencies {

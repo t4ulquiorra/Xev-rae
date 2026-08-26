@@ -16,8 +16,10 @@ jobs:
         include:
           - variant: FossRelease
             flavor: foss
+            prefix: Xevrae-Foss
           - variant: FullRelease
             flavor: full
+            prefix: Xevrae-Full
     
     steps:
       - name: Checkout
@@ -64,29 +66,29 @@ jobs:
       - name: Upload arm64-v8a APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ matrix.variant }}-arm64-v8a
-          path: app/build/outputs/apk/${{ matrix.flavor }}/release/app-${{ matrix.flavor }}-arm64-v8a-release.apk
+          name: ${{ matrix.prefix }}-arm64-v8a
+          path: app/build/outputs/apk/${{ matrix.flavor }}/release/${{ matrix.prefix }}-arm64-v8a-release.apk
           retention-days: 14
 
       - name: Upload armeabi-v7a APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ matrix.variant }}-armeabi-v7a
-          path: app/build/outputs/apk/${{ matrix.flavor }}/release/app-${{ matrix.flavor }}-armeabi-v7a-release.apk
+          name: ${{ matrix.prefix }}-armeabi-v7a
+          path: app/build/outputs/apk/${{ matrix.flavor }}/release/${{ matrix.prefix }}-armeabi-v7a-release.apk
           retention-days: 14
 
       - name: Upload universal APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ matrix.variant }}-universal
-          path: app/build/outputs/apk/${{ matrix.flavor }}/release/app-${{ matrix.flavor }}-universal-release.apk
+          name: ${{ matrix.prefix }}-universal
+          path: app/build/outputs/apk/${{ matrix.flavor }}/release/${{ matrix.prefix }}-universal-release.apk
           retention-days: 14
 
       - name: Upload x86_64 APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk-${{ matrix.variant }}-x86_64
-          path: app/build/outputs/apk/${{ matrix.flavor }}/release/app-${{ matrix.flavor }}-x86_64-release.apk
+          name: ${{ matrix.prefix }}-x86_64
+          path: app/build/outputs/apk/${{ matrix.flavor }}/release/${{ matrix.prefix }}-x86_64-release.apk
           retention-days: 14
 
   release:
