@@ -19,6 +19,7 @@ import com.xevrae.ui.theme.typo
 fun MediaPlayerView(
     url: String,
     modifier: Modifier = Modifier,
+    cropToBounds: Boolean = false,
 ) {
     MediaPlayerView(
         modifier = modifier,
@@ -26,6 +27,7 @@ fun MediaPlayerView(
         density = LocalDensity.current,
         url = url,
         screenSize = getScreenSizeInfo(),
+        cropToBounds = cropToBounds,
     )
 }
 

@@ -303,6 +303,7 @@ fun ArtistScreen(
                                                 MediaPlayerView(
                                                     url = canvas.first,
                                                     modifier = Modifier.fillMaxSize(),
+                                                    cropToBounds = true,
                                                 )
                                             }
                                         }
