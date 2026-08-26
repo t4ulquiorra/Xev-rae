@@ -8,6 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInHorizontally
@@ -512,20 +514,17 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                                             } else {
                                                 Modifier
                                             },
-                                        ).then(
-                                             // Native blur behind the sidebar — API 31+ only.
-                                             // Scales from 0 (fully closed) to 20dp blur radius (fully open).
-                                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && leftPanelProgress.value > 0f) {
-                                                 val blurPx = leftPanelProgress.value * 50f // 50px max blur at progress=1
-                                                 Modifier.graphicsLayer {
-                                                     renderEffect = RenderEffect.createBlurEffect(
-                                                         blurPx, blurPx, Shader.TileMode.CLAMP
-                                                     )
-                                                 }
-                                             } else {
-                                                 Modifier
-                                             },
-                                         ),
+                                        )
+                                        .graphicsLayer {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && leftPanelProgress.value > 0f) {
+                                                val blurPx = leftPanelProgress.value * 50f
+                                                renderEffect = RenderEffect.createBlurEffect(
+                                                    blurPx, blurPx, Shader.TileMode.CLAMP
+                                                ).asComposeRenderEffect()
+                                            } else {
+                                                renderEffect = null
+                                            }
+                                        },
                                 ) {
                                     AppNavigationGraph(
                                         innerPadding = innerPadding,
