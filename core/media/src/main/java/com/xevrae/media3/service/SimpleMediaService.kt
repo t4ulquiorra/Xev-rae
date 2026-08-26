@@ -29,7 +29,7 @@ import com.xevrae.common.MEDIA_NOTIFICATION
 import com.xevrae.domain.manager.DataStoreManager
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
 import com.xevrae.logger.Logger
-import com.xevrae.media3.R
+import com.xevrae.android.media.R
 import com.xevrae.media3.extension.toCommandButton
 import com.xevrae.media3.utils.CoilBitmapLoader
 import kotlinx.coroutines.CoroutineScope
