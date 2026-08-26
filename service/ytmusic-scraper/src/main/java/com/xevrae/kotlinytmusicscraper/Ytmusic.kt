@@ -22,8 +22,10 @@ import com.xevrae.kotlinytmusicscraper.models.body.NextBody
 import com.xevrae.kotlinytmusicscraper.models.body.PlayerBody
 import com.xevrae.kotlinytmusicscraper.models.body.SearchBody
 import com.xevrae.kotlinytmusicscraper.models.response.DownloadProgress
+import com.xevrae.kotlinytmusicscraper.models.response.RemoteConfig
 import com.xevrae.kotlinytmusicscraper.utils.parseCookieString
 import com.xevrae.kotlinytmusicscraper.utils.sha1
+import com.xevrae.ktorext.curl.CurlLogger
 import com.xevrae.ktorext.encoding.brotli
 import com.xevrae.ktorext.getEngine
 import com.xevrae.logger.Logger
@@ -45,11 +47,14 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.prepareRequest
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.Parameters
 import io.ktor.http.contentType
 import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
@@ -61,6 +66,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.io.readByteArray
@@ -119,9 +125,16 @@ class Ytmusic {
         set(value) {
             field = value
             cookieMap = if (value == null) emptyMap() else parseCookieString(value)
+            extractor.logIn(value)
         }
 
     var pageId: String? = null
+
+    // TIDAL credentials. Empty until CommonRepositoryImpl pushes the values fetched from the
+    // remote config (cached in DataStore). Deliberately NOT hard-coded in source — while
+    // empty, TIDAL metadata lookups fail silently until the first successful fetch.
+    var tidalClientId: String = ""
+    var tidalClientSecret: String = ""
 
     private var cookieMap = emptyMap<String, String>()
 
@@ -142,15 +155,9 @@ class Ytmusic {
     private fun createClient() =
         HttpClient(getEngine()) {
             expectSuccess = true
-//            install(KtorToCurl) {
-//                converter =
-//                    object : CurlLogger {
-//                        override fun log(curl: String) {
-//                            Logger.d(TAG, "Curl command:")
-//                            Logger.d(TAG, curl)
-//                        }
-//                    }
-//            }
+            install(CurlLogger) {
+                logger = { Logger.d(TAG, it) }
+            }
             install(HttpRedirect) {
                 checkHttpMethod = false
                 allowHttpsDowngrade = true
@@ -386,8 +393,8 @@ class Ytmusic {
         parameter("prettyPrint", false)
     }
 
-    suspend fun getXevraeChart() =
-        httpClient.get("https://chart.xevrae.org/api/playlists") {
+    suspend fun getSimpMusicChart() =
+        httpClient.get("https://chart.simpmusic.org/api/playlists") {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
         }
@@ -530,10 +537,38 @@ class Ytmusic {
                 actions =
                     listOf(
                         EditPlaylistBody.Action(
-                            playlistName = null,
                             action = "ACTION_REMOVE_VIDEO",
                             removedVideoId = videoId,
                             setVideoId = setVideoId,
+                        ),
+                    ),
+            ),
+        )
+    }
+
+    /**
+     * Move a playlist item before another item.
+     * @param playlistId The YouTube playlist ID
+     * @param setVideoId The setVideoId of the item to move
+     * @param movedSetVideoIdSuccessor The setVideoId of the item that should come AFTER the moved item.
+     *        If null, the item is moved to the end of the playlist.
+     */
+    suspend fun moveItemYouTubePlaylist(
+        playlistId: String,
+        setVideoId: String,
+        movedSetVideoIdSuccessor: String? = null,
+    ) = httpClient.post("browse/edit_playlist") {
+        ytClient(WEB_REMIX, setLogin = true)
+        setBody(
+            EditPlaylistBody(
+                context = WEB_REMIX.toContext(locale, visitorData),
+                playlistId = playlistId.removePrefix("VL"),
+                actions =
+                    listOf(
+                        EditPlaylistBody.Action(
+                            action = "ACTION_MOVE_VIDEO_BEFORE",
+                            setVideoId = setVideoId,
+                            movedSetVideoIdSuccessor = movedSetVideoIdSuccessor,
                         ),
                     ),
             ),
@@ -562,12 +597,12 @@ class Ytmusic {
         }
 
     suspend fun checkForGithubReleaseUpdate() =
-        httpClient.get("https://api.github.com/repos/maxrave-dev/Xevrae/releases/latest") {
+        httpClient.get("https://api.github.com/repos/maxrave-dev/SimpMusic/releases/latest") {
             contentType(ContentType.Application.Json)
         }
 
     suspend fun checkForFdroidUpdate() =
-        httpClient.get("https://f-droid.org/api/v1/packages/com.xevrae.xevrae") {
+        httpClient.get("https://f-droid.org/api/v1/packages/com.xevrae.simpmusic") {
             contentType(ContentType.Application.Json)
         }
 
@@ -1130,23 +1165,60 @@ class Ytmusic {
         }
     }
 
+    suspend fun getTidalOAuthToken() =
+        httpClient.submitForm(
+            url = TIDAL_AUTH_URL,
+            formParameters =
+                Parameters.build {
+                    append("client_id", tidalClientId)
+                    append("client_secret", tidalClientSecret)
+                    append("grant_type", "client_credentials")
+                },
+        )
+
     suspend fun searchTidalId(
-        url: String,
+        token: String,
         query: String,
-    ) = httpClient.get("$url/search") {
-        contentType(ContentType.Application.Json)
-        header("accept", "*/*")
-        parameter("s", query)
+    ) = httpClient.get(TIDAL_SEARCH_URL) {
+        header("Authorization", "Bearer $token")
+        header("Accept", "application/json")
+        header("Referer", "https://tidal.com/")
+        userAgent("Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0")
+        parameter("query", query)
+        parameter("types", "TRACKS")
+        parameter("limit", 5)
+        parameter("countryCode", "US")
+        parameter("locale", "en_US")
+        parameter("deviceType", "BROWSER")
+        parameter("includeContributors", true)
+        parameter("supportsUserData", true)
     }
 
-    suspend fun getTidalStream(
-        url: String,
-        tidalId: String,
-    ) = httpClient.get("$url/track") {
-        contentType(ContentType.Application.Json)
-        header("accept", "*/*")
-        parameter("id", tidalId)
-        parameter("quality", "HIGH")
+    /**
+     * Fetch the remote app config (TIDAL credentials) from GitHub raw.
+     *
+     * raw.githubusercontent.com serves .json files as `text/plain`, so Ktor's
+     * ContentNegotiation will not auto-deserialize the body. We read it as text and parse
+     * it explicitly with [normalJson] (which ignores unknown keys for forward-compat).
+     */
+    suspend fun getTidalRemoteConfig(): RemoteConfig {
+        val text =
+            httpClient
+                .get(TIDAL_REMOTE_CONFIG_URL) {
+                    accept(ContentType.Application.Json)
+                }.bodyAsText()
+        return normalJson.decodeFromString(RemoteConfig.serializer(), text)
+    }
+
+    companion object {
+        private const val TIDAL_AUTH_URL = "https://auth.tidal.com/v1/oauth2/token"
+        private const val TIDAL_SEARCH_URL = "https://tidal.com/v2/client-search/"
+
+        // Remote config (TIDAL credentials) hosted on GitHub raw, fetched on each app launch.
+        // Credentials are NOT hard-coded in source — they live only in this remote file,
+        // kept in a separate repo (simpmusic-files) so the main repo stays credential-free.
+        const val TIDAL_REMOTE_CONFIG_URL =
+            "https://raw.githubusercontent.com/maxrave-dev/simpmusic-files/refs/heads/main/remote-config.json"
     }
 }
 

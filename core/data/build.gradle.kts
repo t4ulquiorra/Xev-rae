@@ -39,7 +39,5 @@ dependencies {
     implementation(libs.paging.common)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-
-    // XiaoRi Fast Engine
-    implementation("com.github.t4ulquiorra:innertube-engine:1.5")
 }
+

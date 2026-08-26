@@ -155,7 +155,15 @@ object RepositoryModule {
         dataStoreManager: DataStoreManager,
         localDataSource: LocalDataSource,
         youTube: YouTube,
-    ): SongRepository = SongRepositoryImpl(dataStoreManager, localDataSource, youTube)
+        downloadHandlerLazy: dagger.Lazy<com.xevrae.domain.mediaservice.handler.DownloadHandler>,
+        mediaPlayerHandlerLazy: dagger.Lazy<com.xevrae.domain.mediaservice.handler.MediaPlayerHandler>,
+    ): SongRepository = SongRepositoryImpl(
+        dataStoreManager = dataStoreManager,
+        localDataSource = localDataSource,
+        youTube = youTube,
+        downloadHandlerLazy = downloadHandlerLazy,
+        mediaPlayerHandlerLazy = mediaPlayerHandlerLazy,
+    )
 
     @Provides
     @Singleton

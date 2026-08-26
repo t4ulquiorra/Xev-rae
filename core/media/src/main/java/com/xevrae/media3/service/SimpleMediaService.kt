@@ -28,51 +28,38 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.xevrae.common.MEDIA_NOTIFICATION
 import com.xevrae.domain.manager.DataStoreManager
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
-import com.xevrae.domain.mediaservice.player.MediaPlayerInterface
 import com.xevrae.logger.Logger
-import com.xevrae.media3.exoplayer.CrossfadeExoPlayerAdapter
-import com.xevrae.android.media.R
+import com.xevrae.media3.R
 import com.xevrae.media3.extension.toCommandButton
 import com.xevrae.media3.utils.CoilBitmapLoader
-import kotlin.time.Duration.Companion.seconds
-import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import javax.inject.Named
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.qualifier.named
+import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 @UnstableApi
-@AndroidEntryPoint
-internal class SimpleMediaService : MediaLibraryService() {
-    @Inject
-    @Named(com.xevrae.common.Config.SERVICE_SCOPE)
-    lateinit var coroutineScope: CoroutineScope
-
-    @Inject
-    lateinit var mediaPlayerAdapter: MediaPlayerInterface
-
-    private val player: Player by lazy {
-        (mediaPlayerAdapter as CrossfadeExoPlayerAdapter).forwardingPlayer
-    }
-
-    @Inject
-    lateinit var coilBitmapLoader: CoilBitmapLoader
+internal class SimpleMediaService :
+    MediaLibraryService(),
+    KoinComponent {
+    private val coroutineScope by inject<CoroutineScope>(named(com.xevrae.common.Config.SERVICE_SCOPE))
+    // Session-level player from DI: the ForwardingPlayer wrapped with Cast support in the
+    // full build (plain ForwardingPlayer in the FOSS build).
+    private val player: Player by inject<Player>(qualifier = named(com.xevrae.common.Config.MAIN_PLAYER))
+    private val coilBitmapLoader: CoilBitmapLoader by inject<CoilBitmapLoader>()
 
     private var mediaSession: MediaLibrarySession? = null
 
-    @Inject
-    lateinit var simpleMediaSessionCallback: MediaLibrarySession.Callback
+    private val simpleMediaSessionCallback: MediaLibrarySession.Callback by inject<MediaLibrarySession.Callback>()
 
-    @Inject
-    lateinit var simpleMediaServiceHandler: MediaPlayerHandler
-
-    @Inject
-    lateinit var dataStoreManager: DataStoreManager
+    private val simpleMediaServiceHandler: MediaPlayerHandler by inject<MediaPlayerHandler>()
+    private val dataStoreManager: DataStoreManager by inject<DataStoreManager>()
 
     private val binder = MusicBinder()
 

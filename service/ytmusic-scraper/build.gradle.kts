@@ -36,7 +36,13 @@ dependencies {
     implementation(libs.ksoup.html)
     implementation(libs.ksoup.entities)
     implementation(libs.ffmpeg.kit.audio)
+    implementation(libs.pipepipe.extractor)
     implementation(libs.brave.extractor)
     implementation(libs.gson)
     implementation(libs.okhttp3)
 }
+
+configurations.all {
+    exclude(group = "com.google.protobuf", module = "protobuf-java")
+}
+

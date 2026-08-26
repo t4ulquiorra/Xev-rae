@@ -53,7 +53,6 @@ import com.xevrae.domain.manager.DataStoreManager
 import com.xevrae.domain.mediaservice.handler.DownloadHandler
 import com.xevrae.domain.mediaservice.handler.MediaPlayerHandler
 import com.xevrae.domain.mediaservice.player.MediaPlayerInterface
-import com.xevrae.domain.quality.HighQualityStreamRepository
 import com.xevrae.domain.repository.CacheRepository
 import com.xevrae.domain.repository.HomeRepository
 import com.xevrae.domain.repository.LocalPlaylistRepository
@@ -62,7 +61,6 @@ import com.xevrae.domain.repository.SearchRepository
 import com.xevrae.domain.repository.SongRepository
 import com.xevrae.domain.repository.StreamRepository
 import com.xevrae.logger.Logger
-import com.xevrae.media3.cache.StreamUrlCache
 import com.xevrae.media3.extension.isFullyCached
 import com.xevrae.media3.exoplayer.CrossfadeExoPlayerAdapter
 import com.xevrae.media3.repository.CacheRepositoryImpl
@@ -70,7 +68,6 @@ import com.xevrae.media3.service.SimpleMediaService
 import com.xevrae.media3.service.callback.SimpleMediaSessionCallback
 import com.xevrae.media3.service.download.DownloadUtils
 import com.xevrae.media3.service.mediasourcefactory.MergingMediaSourceFactory
-import com.xevrae.media3.service.quality.QualityStreamResolver
 import com.xevrae.media3.utils.CoilBitmapLoader
 import dagger.Module
 import dagger.Provides
@@ -217,10 +214,6 @@ object Media3Module {
         @ApplicationContext context: Context,
         @Named(SERVICE_SCOPE) coroutineScope: CoroutineScope,
     ): CoilBitmapLoader = CoilBitmapLoader(context, coroutineScope)
-
-    @Provides
-    @Singleton
-    fun provideHighQualityStreamRepository(): HighQualityStreamRepository = QualityStreamResolver()
 
     @Provides
     @Singleton

@@ -5,27 +5,67 @@ import com.arthenica.ffmpegkit.ReturnCode
 import com.xevrae.kotlinytmusicscraper.models.SongItem
 import com.xevrae.kotlinytmusicscraper.models.response.DownloadProgress
 import com.xevrae.logger.Logger
+import dev.maxrave.pipepipe.extractor.NewPipe
+import dev.maxrave.pipepipe.extractor.ServiceList
+import dev.maxrave.pipepipe.extractor.stream.StreamInfo
 import okio.FileSystem
 import okio.IOException
 import okio.Path.Companion.toPath
-import org.schabi.newpipe.extractor.NewPipe
-import org.schabi.newpipe.extractor.stream.StreamInfo
+import org.schabi.newpipe.extractor.NewPipe as BraveNewPipe
+import org.schabi.newpipe.extractor.ServiceList as BraveServiceList
+import org.schabi.newpipe.extractor.stream.StreamInfo as BraveStreamInfo
 
 private const val TAG = "Extractor"
 
 class Extractor {
     private var newPipeDownloader = NewPipeDownloaderImpl(proxy = null)
+    private var braveNewPipeDownloader = BraveNewPipeDownloaderImpl(proxy = null)
 
     fun init() {
         NewPipe.init(newPipeDownloader)
+        BraveNewPipe.init(braveNewPipeDownloader)
+    }
+
+    fun logIn(cookie: String?) {
+        ServiceList.YouTube.tokens = cookie ?: ""
     }
 
     fun newPipePlayer(videoId: String): List<Pair<Int, String>> {
-        val streamInfo = StreamInfo.getInfo(NewPipe.getService(0), "https://www.youtube.com/watch?v=$videoId")
-        val streamsList = streamInfo.audioStreams + streamInfo.videoStreams + streamInfo.videoOnlyStreams
-        return streamsList.mapNotNull {
-            (it.itagItem?.id ?: return@mapNotNull null) to it.content
+        try {
+            val streamInfo =
+                StreamInfo.getInfo(ServiceList.YouTube, "https://music.youtube.com/watch?v=$videoId")
+            val streamsList = streamInfo.audioStreams + streamInfo.videoStreams + streamInfo.videoOnlyStreams
+            val pipeResult =
+                streamsList.mapNotNull {
+                    (it.itagItem?.id ?: return@mapNotNull null) to it.content
+                }
+            if (!pipeResult.hasRequiredItags()) {
+                Logger.d(
+                    TAG,
+                    "PipePipe missing required itags for $videoId (got=${pipeResult.map { it.first }}), falling back to BravePipe",
+                )
+            } else if (!pipeResult.headCheckRandomStream()) {
+                Logger.d(
+                    TAG,
+                    "PipePipe stream URL HEAD check failed (non 2xx) for $videoId, falling back to BravePipe",
+                )
+            } else {
+                return pipeResult
+            }
+        } catch (e: Throwable) {
+            Logger.w(TAG, "PipePipe extractor failed for $videoId: ${e.message}, falling back to BravePipe")
         }
+
+        return runCatching {
+            val streamInfo =
+                BraveStreamInfo.getInfo(BraveServiceList.YouTube, "https://www.youtube.com/watch?v=$videoId")
+            val streamsList = streamInfo.audioStreams + streamInfo.videoStreams + streamInfo.videoOnlyStreams
+            streamsList.mapNotNull {
+                (it.itagItem?.id ?: return@mapNotNull null) to it.content
+            }
+        }.onFailure {
+            Logger.w(TAG, "BravePipe extractor failed for $videoId: ${it.message}")
+        }.getOrElse { emptyList() }
     }
 
     fun mergeAudioVideoDownload(filePath: String): DownloadProgress {
@@ -44,11 +84,11 @@ class Extractor {
                 "-map",
                 "1:a:0",
                 "-shortest",
-                "$filePath-Xevrae.mp4",
+                "$filePath-SimpMusic.mp4",
             ).joinToString(" ")
 
-        if (FileSystem.SYSTEM.exists("$filePath-Xevrae.mp4".toPath())) {
-            FileSystem.SYSTEM.delete("$filePath-Xevrae.mp4".toPath())
+        if (FileSystem.SYSTEM.exists("$filePath-SimpMusic.mp4".toPath())) {
+            FileSystem.SYSTEM.delete("$filePath-SimpMusic.mp4".toPath())
         }
 
         val session =
@@ -107,8 +147,8 @@ class Extractor {
             if (FileSystem.SYSTEM.exists("$filePath.mp3".toPath())) {
                 FileSystem.SYSTEM.delete("$filePath.mp3".toPath())
             }
-            if (FileSystem.SYSTEM.exists("$filePath-xevrae.mp3".toPath())) {
-                FileSystem.SYSTEM.delete("$filePath-xevrae.mp3".toPath())
+            if (FileSystem.SYSTEM.exists("$filePath-simpmusic.mp3".toPath())) {
+                FileSystem.SYSTEM.delete("$filePath-simpmusic.mp3".toPath())
             }
         } catch (e: IOException) {
             e.printStackTrace()
@@ -164,7 +204,7 @@ class Extractor {
                 "-metadata",
                 "album=\"${track.album?.name ?: track.title}\"",
                 "-disposition:v:0 attached_pic",
-                "$filePath-xevrae.mp3",
+                "$filePath-simpmusic.mp3",
             ).joinToString(" ")
         val sessionInject =
             FFmpegKit.execute(
@@ -187,7 +227,7 @@ class Extractor {
             try {
                 FileSystem.SYSTEM.delete("$filePath.jpg".toPath())
                 FileSystem.SYSTEM.delete("$filePath.webm".toPath())
-                FileSystem.SYSTEM.delete("$filePath-xevrae.mp3".toPath())
+                FileSystem.SYSTEM.delete("$filePath-simpmusic.mp3".toPath())
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -198,7 +238,7 @@ class Extractor {
             try {
                 FileSystem.SYSTEM.delete("$filePath.jpg".toPath())
                 FileSystem.SYSTEM.delete("$filePath.webm".toPath())
-                FileSystem.SYSTEM.delete("$filePath-xevrae.mp3".toPath())
+                FileSystem.SYSTEM.delete("$filePath-simpmusic.mp3".toPath())
             } catch (e: IOException) {
                 e.printStackTrace()
             }

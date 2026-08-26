@@ -9,6 +9,7 @@ import com.xevrae.kotlinytmusicscraper.models.SongItem
 import com.xevrae.kotlinytmusicscraper.models.Thumbnail
 import com.xevrae.kotlinytmusicscraper.models.Thumbnails
 import com.xevrae.kotlinytmusicscraper.models.oddElements
+import com.xevrae.kotlinytmusicscraper.models.splitBySeparator
 import com.xevrae.kotlinytmusicscraper.utils.parseTime
 
 data class AlbumPage(
@@ -27,13 +28,7 @@ data class AlbumPage(
             return AlbumItem(
                 browseId = renderer.navigationEndpoint.browseEndpoint?.browseId ?: return null,
                 playlistId =
-                    renderer.thumbnailOverlay
-                        ?.musicItemThumbnailOverlayRenderer
-                        ?.content
-                        ?.musicPlayButtonRenderer
-                        ?.playNavigationEndpoint
-                        ?.watchPlaylistEndpoint
-                        ?.playlistId ?: return null,
+                    renderer.playlistId ?: return null,
                 title =
                     renderer.title.runs
                         ?.firstOrNull()
@@ -66,7 +61,7 @@ data class AlbumPage(
                 return null
             } else {
                 return SongItem(
-                    id = renderer.playlistItemData?.videoId ?: return null,
+                    id = renderer.videoId ?: return null,
                     title =
                         renderer.flexColumns
                             .firstOrNull()
@@ -81,6 +76,10 @@ data class AlbumPage(
                             ?.musicResponsiveListItemFlexColumnRenderer
                             ?.text
                             ?.runs
+                            // The column reads "Artist • Album • 13M plays"; only the first group
+                            // is artists, so everything after the first " • " is dropped.
+                            ?.splitBySeparator()
+                            ?.firstOrNull()
                             ?.oddElements()
                             ?.map {
                                 Artist(
@@ -118,6 +117,7 @@ data class AlbumPage(
                         renderer.badges?.find {
                             it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE"
                         } != null,
+                    musicVideoType = renderer.musicVideoType,
                 )
             }
         }

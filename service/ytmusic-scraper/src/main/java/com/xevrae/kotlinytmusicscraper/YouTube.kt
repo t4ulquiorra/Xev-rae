@@ -1,6 +1,6 @@
 package com.xevrae.kotlinytmusicscraper
 
-import androidx.core.net.toUri
+import android.net.Uri
 import com.xevrae.kotlinytmusicscraper.YouTube.Companion.DEFAULT_VISITOR_DATA
 import com.xevrae.kotlinytmusicscraper.extension.toListFormat
 import com.xevrae.kotlinytmusicscraper.models.AccountInfo
@@ -10,8 +10,6 @@ import com.xevrae.kotlinytmusicscraper.models.ArtistItem
 import com.xevrae.kotlinytmusicscraper.models.BrowseEndpoint
 import com.xevrae.kotlinytmusicscraper.models.GridRenderer
 import com.xevrae.kotlinytmusicscraper.models.MediaType
-import com.xevrae.kotlinytmusicscraper.models.TidalMetadataResult
-import com.xevrae.kotlinytmusicscraper.models.TidalStreamResult
 import com.xevrae.kotlinytmusicscraper.models.MusicCarouselShelfRenderer
 import com.xevrae.kotlinytmusicscraper.models.MusicShelfRenderer
 import com.xevrae.kotlinytmusicscraper.models.MusicTwoRowItemRenderer
@@ -21,6 +19,7 @@ import com.xevrae.kotlinytmusicscraper.models.Run
 import com.xevrae.kotlinytmusicscraper.models.SearchSuggestions
 import com.xevrae.kotlinytmusicscraper.models.SongInfo
 import com.xevrae.kotlinytmusicscraper.models.SongItem
+import com.xevrae.kotlinytmusicscraper.models.TidalMetadataResult
 import com.xevrae.kotlinytmusicscraper.models.VideoItem
 import com.xevrae.kotlinytmusicscraper.models.WatchEndpoint
 import com.xevrae.kotlinytmusicscraper.models.YTItemType
@@ -45,9 +44,10 @@ import com.xevrae.kotlinytmusicscraper.models.response.NextResponse
 import com.xevrae.kotlinytmusicscraper.models.response.PipedResponse
 import com.xevrae.kotlinytmusicscraper.models.response.PlayerResponse
 import com.xevrae.kotlinytmusicscraper.models.response.SearchResponse
-import com.xevrae.kotlinytmusicscraper.models.response.XevraeChartResponse
+import com.xevrae.kotlinytmusicscraper.models.response.SimpMusicChartResponse
 import com.xevrae.kotlinytmusicscraper.models.response.TidalSearchResponse
-import com.xevrae.kotlinytmusicscraper.models.response.TidalStreamResponse
+import com.xevrae.kotlinytmusicscraper.models.response.TidalOAuthResponse
+import com.xevrae.kotlinytmusicscraper.models.response.RemoteConfig
 import com.xevrae.kotlinytmusicscraper.models.response.toLikeStatus
 import com.xevrae.kotlinytmusicscraper.models.response.toListAccountInfo
 import com.xevrae.kotlinytmusicscraper.models.xevrae.FdroidResponse
@@ -79,7 +79,6 @@ import com.xevrae.kotlinytmusicscraper.parser.getPlaylistContinuation
 import com.xevrae.kotlinytmusicscraper.parser.getReloadParams
 import com.xevrae.kotlinytmusicscraper.parser.getSuggestionSongItems
 import com.xevrae.kotlinytmusicscraper.parser.hasReloadParams
-import com.xevrae.kotlinytmusicscraper.utils.decodeTidalManifest
 import com.xevrae.logger.Logger
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
@@ -91,16 +90,14 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.parseQueryString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.toLocalDateTime
@@ -122,14 +119,19 @@ private const val TAG = "YouTubeScraper"
 
 /**
  * Special thanks to [z-huang/InnerTune](https://github.com/z-huang/InnerTune)
- * This library is from [z-huang/InnerTune] and I just modified it to comply with Xevrae
+ * This library is from [z-huang/InnerTune] and I just modified it to comply with SimpMusic
  *
- * Here is the object that can create all request to YouTube Music and Spotify in Xevrae
+ * Here is the object that can create all request to YouTube Music and Spotify in SimpMusic
  * Using YouTube Internal API
  * @author maxrave-dev
  */
+
 class YouTube {
     private val ytMusic = Ytmusic()
+
+    private val tidalTokenMutex = Mutex()
+    private var tidalAccessToken: String? = null
+    private var tidalTokenExpiresAt: Long = 0L
 
     var cookiePath: Path?
         get() = ytMusic.cookiePath
@@ -174,6 +176,21 @@ class YouTube {
         get() = ytMusic.pageId
         set(value) {
             ytMusic.pageId = value
+        }
+
+    /**
+     * TIDAL credentials, backed by [Ytmusic]. Set by the data layer from cached remote config.
+     */
+    var tidalClientId: String
+        get() = ytMusic.tidalClientId
+        set(value) {
+            ytMusic.tidalClientId = value
+        }
+
+    var tidalClientSecret: String
+        get() = ytMusic.tidalClientSecret
+        set(value) {
+            ytMusic.tidalClientSecret = value
         }
 
     /**
@@ -811,7 +828,7 @@ class YouTube {
 
     /**
      * Execute a custom POST request to YouTube Music
-     * In Xevrae, I use this function to parsing Home, Playlist, Album data instead using [album], [playlist], [artist] function
+     * In SimpMusic, I use this function to parsing Home, Playlist, Album data instead using [album], [playlist], [artist] function
      * @param browseId the browseId (such as "FEmusic_home", "VL$playlistId", etc.)
      * @param params the params
      * @param continuation the continuation token
@@ -874,13 +891,13 @@ class YouTube {
                         ?.sectionListRenderer
                         ?.contents
                         ?.firstOrNull()
-                        ?.gridRenderer
-                        ?.items
+                        ?.musicCarouselShelfRenderer
+                        ?.contents
                         ?.mapNotNull { it.musicTwoRowItemRenderer }
                         ?.mapNotNull(RelatedPage::fromMusicTwoRowItemRenderer)
                         .orEmpty()
                         .mapNotNull {
-                            if (it.type == YTItemType.PLAYLIST) it as? PlaylistItem else null
+                            if (it.type == YTItemType.ALBUM) it as? AlbumItem else null
                         },
                 musicVideo =
                     response.contents
@@ -1283,144 +1300,86 @@ class YouTube {
                         ]
                     }.joinToString("")
 
-            val sigTimestamp = run {
-                val today = Clock.System.todayIn(TimeZone.UTC)
-                val epoch = Instant.fromEpochSeconds(0).toLocalDateTime(TimeZone.UTC).date
-                epoch.daysUntil(today)
-            }
-
             var decodedSigResponse: PlayerResponse? = null
-
-            // Race WEB_REMIX (with NewPipe extractor fallback) and ANDROID_VR (direct URLs) in parallel.
-            coroutineScope {
-                val webRemixDeferred = async {
-                    runCatching {
-                        val tempRes = ytMusic.player(
-                            YouTubeClient.WEB_REMIX,
-                            videoId,
-                            playlistId,
-                            cpn,
-                            signatureTimestamp = sigTimestamp,
-                        ).body<PlayerResponse>()
-
-                        val processedRes = tempRes.let {
-                            val fexp = it.streamingData?.serverAbrStreamingUrl?.toUri()?.getQueryParameter("fexp")
-                            val playbackTracking = it.playbackTracking
-                            it.copy(
-                                playbackTracking = playbackTracking?.copy(
-                                    atrUrl = playbackTracking.atrUrl?.copy(
-                                        baseUrl = playbackTracking.atrUrl.baseUrl?.toUri()?.buildUpon()?.apply {
-                                            if (fexp != null) appendQueryParameter("fexp", fexp)
-                                        }?.build()?.toString()
-                                    ),
-                                    videostatsPlaybackUrl = playbackTracking.videostatsPlaybackUrl?.copy(
-                                        baseUrl = playbackTracking.videostatsPlaybackUrl.baseUrl?.toUri()?.buildUpon()?.apply {
-                                            if (fexp != null) appendQueryParameter("fexp", fexp)
-                                        }?.build()?.toString()
-                                    ),
-                                    videostatsWatchtimeUrl = playbackTracking.videostatsWatchtimeUrl?.copy(
-                                        baseUrl = playbackTracking.videostatsWatchtimeUrl.baseUrl?.toUri()?.buildUpon()?.apply {
-                                            if (fexp != null) appendQueryParameter("fexp", fexp)
-                                        }?.build()?.toString()
-                                    )
-                                )
-                            )
-                        }
-
-                        newPipePlayer(videoId, processedRes)
-                    }.getOrNull()
-                }
-
-                val androidVrDeferred = async {
-                    runCatching {
-                        val vrRes = ytMusic.player(
-                            YouTubeClient.ANDROID_VR,
-                            videoId,
-                            playlistId,
-                            cpn,
-                            signatureTimestamp = sigTimestamp,
-                        ).body<PlayerResponse>()
-
-                        if (vrRes.playabilityStatus.status == "OK" &&
-                            vrRes.streamingData?.adaptiveFormats?.any { !it.url.isNullOrEmpty() } == true) {
-                            vrRes
-                        } else null
-                    }.getOrNull()
-                }
-
-                val resultChannel = Channel<PlayerResponse?>(2)
-                launch { resultChannel.send(webRemixDeferred.await()) }
-                launch { resultChannel.send(androidVrDeferred.await()) }
-
-                val first = resultChannel.receive()
-                if (first != null) {
-                    decodedSigResponse = first
-                    webRemixDeferred.cancel()
-                    androidVrDeferred.cancel()
-                    Logger.d(TAG, "YouTube Player parallel race won by: ${if (first.streamingData?.adaptiveFormats?.any { !it.url.isNullOrEmpty() } == true && first.streamingData?.adaptiveFormats?.any { it.signatureCipher.isNullOrEmpty() } == true) "ANDROID_VR" else "WEB_REMIX"}")
-                } else {
-                    val second = resultChannel.receive()
-                    if (second != null) {
-                        decodedSigResponse = second
-                        Logger.d(TAG, "YouTube Player parallel race resolved on second attempt")
+            val tempRes =
+                ytMusic
+                    .player(
+                        WEB_REMIX,
+                        videoId,
+                        playlistId,
+                        cpn,
+                        signatureTimestamp =
+                            run {
+                                val today = Clock.System.todayIn(TimeZone.UTC)
+                                val epoch =
+                                    Instant
+                                        .fromEpochSeconds(0)
+                                        .toLocalDateTime(TimeZone.UTC)
+                                        .date
+                                epoch.daysUntil(today)
+                            },
+                    ).body<PlayerResponse>()
+                    .let {
+                        val fexp =
+                            it.streamingData
+                                ?.serverAbrStreamingUrl
+                                ?.let { url -> Uri.parse(url) }
+                                ?.getQueryParameter("fexp")
+                        val playbackTracking = it.playbackTracking
+                        it.copy(
+                            playbackTracking =
+                                playbackTracking?.copy(
+                                    atrUrl =
+                                        playbackTracking.atrUrl?.copy(
+                                            baseUrl =
+                                                playbackTracking.atrUrl.baseUrl
+                                                    ?.let { url -> Uri.parse(url) }
+                                                    ?.buildUpon()
+                                                    ?.apply {
+                                                        if (fexp != null) {
+                                                            appendQueryParameter("fexp", fexp)
+                                                        }
+                                                    }?.build()
+                                                    ?.toString(),
+                                        ),
+                                    videostatsPlaybackUrl =
+                                        playbackTracking.videostatsPlaybackUrl?.copy(
+                                            baseUrl =
+                                                playbackTracking.videostatsPlaybackUrl.baseUrl
+                                                    ?.let { url -> Uri.parse(url) }
+                                                    ?.buildUpon()
+                                                    ?.apply {
+                                                        if (fexp != null) {
+                                                            appendQueryParameter("fexp", fexp)
+                                                        }
+                                                    }?.build()
+                                                    ?.toString(),
+                                        ),
+                                    videostatsWatchtimeUrl =
+                                        playbackTracking.videostatsWatchtimeUrl?.copy(
+                                            baseUrl =
+                                                playbackTracking.videostatsWatchtimeUrl.baseUrl
+                                                    ?.let { url -> Uri.parse(url) }
+                                                    ?.buildUpon()
+                                                    ?.apply {
+                                                        if (fexp != null) {
+                                                            appendQueryParameter("fexp", fexp)
+                                                        }
+                                                    }?.build()
+                                                    ?.toString(),
+                                        ),
+                                ),
+                        )
                     }
-                }
+
+            val response = newPipePlayer(videoId, tempRes)
+            if (response != null) {
+                decodedSigResponse = response
+                Logger.d(TAG, "YouTube Player found URL")
+            } else {
+                Logger.d(TAG, "YouTube Player no URL found")
             }
-
-            // Multi-client fallback: mirrors XiaoRi's STREAM_FALLBACK_CLIENTS chain
-            // Handles privately owned tracks, age-restricted content, and bot-detected sessions
-            if (decodedSigResponse == null) {
-                Logger.d(TAG, "YouTube Player parallel race failed — trying sequential fallback clients")
-                val fallbackClients = listOf(
-                    YouTubeClient.ANDROID_MUSIC,
-                    YouTubeClient.IOS,
-                    YouTubeClient.TVHTML5_SIMPLY,
-                    YouTubeClient.TVHTML5,
-                    YouTubeClient.ANDROID,
-                    YouTubeClient.WEB_EMBEDDED,
-                    YouTubeClient.MWEB,
-                    YouTubeClient.WEB,
-                )
-                for (client in fallbackClients) {
-                    try {
-                        Logger.d(TAG, "Trying fallback client: ${client.clientName}")
-                        val fallbackRes = ytMusic.player(
-                            client,
-                            videoId,
-                            playlistId,
-                            cpn,
-                            signatureTimestamp = sigTimestamp,
-                        ).body<PlayerResponse>()
-
-                        if (fallbackRes.playabilityStatus.status != "OK") {
-                            Logger.d(TAG, "Fallback client ${client.clientName} not OK: ${fallbackRes.playabilityStatus.status}")
-                            continue
-                        }
-
-                        val isPrivatelyOwned = fallbackRes.videoDetails?.musicVideoType == "MUSIC_VIDEO_TYPE_PRIVATELY_OWNED_TRACK"
-                        val hasDirectUrls = fallbackRes.streamingData?.adaptiveFormats
-                            ?.any { !it.url.isNullOrEmpty() } == true
-
-                        if (hasDirectUrls || isPrivatelyOwned) {
-                            decodedSigResponse = if (isPrivatelyOwned || hasDirectUrls) {
-                                // Skip NewPipe for direct URLs and privately owned
-                                fallbackRes
-                            } else {
-                                newPipePlayer(videoId, fallbackRes) ?: fallbackRes
-                            }
-                            if (decodedSigResponse != null) {
-                                Logger.d(TAG, "Fallback client ${client.clientName} succeeded")
-                                break
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Logger.e(TAG, "Fallback client ${client.clientName} error: ${e.message}")
-                        continue
-                    }
-                }
-            }
-
-            if (decodedSigResponse == null) throw RuntimeException("No URL found after all fallback clients")
+            if (decodedSigResponse == null) throw RuntimeException("No URL found")
             val firstThumb =
                 decodedSigResponse.videoDetails
                     ?.thumbnail
@@ -1612,7 +1571,7 @@ class YouTube {
                                 title = playlistPanelRenderer.title,
                                 items =
                                     playlistPanelRenderer.contents.mapNotNull {
-                                        it.playlistPanelVideoRenderer?.let { renderer ->
+                                        it.track?.let { renderer ->
                                             NextPage.fromPlaylistPanelVideoRenderer(renderer)
                                         }
                                     } + result.items,
@@ -1655,7 +1614,7 @@ class YouTube {
                     title = playlistPanelRenderer.title,
                     items =
                         playlistPanelRenderer.contents.mapNotNull {
-                            it.playlistPanelVideoRenderer?.let(NextPage::fromPlaylistPanelVideoRenderer)
+                            it.track?.let(NextPage::fromPlaylistPanelVideoRenderer)
                         },
                     currentIndex = playlistPanelRenderer.currentIndex,
                     lyricsEndpoint =
@@ -1890,6 +1849,22 @@ class YouTube {
         ytMusic.addItemYouTubePlaylist(playlistId, videoId).body<AddItemYouTubePlaylistResponse>()
     }
 
+    /**
+     * Move a playlist item before another item in a YouTube playlist.
+     * @param playlistId The YouTube playlist ID
+     * @param setVideoId The setVideoId of the item to move
+     * @param movedSetVideoIdSuccessor The setVideoId of the item that should come AFTER the moved item.
+     *        If null, the item is moved to the end of the playlist.
+     * @return Result<Int> HTTP status code
+     */
+    suspend fun movePlaylistItem(
+        playlistId: String,
+        setVideoId: String,
+        movedSetVideoIdSuccessor: String? = null,
+    ) = runCatching {
+        ytMusic.moveItemYouTubePlaylist(playlistId, setVideoId, movedSetVideoIdSuccessor).status.value
+    }
+
     suspend fun editPlaylist(
         playlistId: String,
         title: String,
@@ -1914,53 +1889,59 @@ class YouTube {
             ytMusic.removeFromLiked(mediaId).status.value
         }
 
-    suspend fun getXevraeChart() =
+    suspend fun getSimpMusicChart() =
         runCatching {
-            ytMusic.getXevraeChart().body<XevraeChartResponse>()
+            ytMusic.getSimpMusicChart().body<SimpMusicChartResponse>()
         }
 
-    suspend fun getTidalStream(
-        url: String,
-        query: String,
-        durationSeconds: Int,
-    ) = runCatching {
-        val searchRes = ytMusic.searchTidalId(url, query).body<TidalSearchResponse>()
-        val firstRes = searchRes.data?.items?.firstOrNull { it?.duration?.let { dur -> abs(dur - durationSeconds) <= 1 } ?: false }
-        val matchedItem =
-            firstRes ?: searchRes.data
-                ?.items
-                ?.filter { it?.duration?.let { dur -> abs(dur - durationSeconds) <= 1 } ?: false }
-                ?.minByOrNull { abs((it?.duration ?: 0) - durationSeconds) }
-        val trackId = matchedItem?.id ?: throw Exception("No matching track found")
-        val streamRes = ytMusic.getTidalStream(url, "$trackId").body<TidalStreamResponse>()
-        TidalStreamResult(
-            stream = streamRes,
-            bpm = matchedItem.bpm,
-            musicKey = matchedItem.key,
-            keyScale = matchedItem.keyScale,
-        )
-    }
+    /**
+     * Fetch the remote app config (TIDAL credentials) from GitHub raw.
+     * Returns a [Result] so callers can fall back silently when the fetch/parse fails.
+     */
+    suspend fun getTidalRemoteConfig(): Result<RemoteConfig> =
+        runCatching {
+            ytMusic.getTidalRemoteConfig()
+        }
 
     /**
-     * Search Tidal for metadata only (bpm, key, keyScale) without fetching the stream.
+     * Ensure a valid Tidal OAuth token is available, refreshing if expired.
+     * In-memory only — token is re-fetched on each app launch (follows Spotify auth pattern).
+     */
+    private suspend fun ensureTidalToken(): String =
+        tidalTokenMutex.withLock {
+            val now = Clock.System.now().toEpochMilliseconds()
+            val cached = tidalAccessToken
+            if (cached != null && now < tidalTokenExpiresAt) return@withLock cached
+
+            val response = ytMusic.getTidalOAuthToken().body<TidalOAuthResponse>()
+            tidalAccessToken = response.accessToken
+            tidalTokenExpiresAt = now + (response.expiresIn * 1000L) - 60_000L
+            Logger.d("Stream", "Tidal OAuth token refreshed, expires in ${response.expiresIn}s")
+            response.accessToken
+        }
+
+    /**
+     * Search Tidal official API for metadata (bpm, key, keyScale).
+     * Token is managed in-memory and auto-refreshed when expired.
      */
     suspend fun searchTidalMetadata(
-        url: String,
         query: String,
         durationSeconds: Int,
     ) = runCatching {
-        val searchRes = ytMusic.searchTidalId(url, query).body<TidalSearchResponse>()
-        val firstRes = searchRes.data?.items?.firstOrNull { it?.duration?.let { dur -> abs(dur - durationSeconds) <= 1 } ?: false }
+        val token = ensureTidalToken()
+        val searchRes = ytMusic.searchTidalId(token, query).body<TidalSearchResponse>()
         val matchedItem =
-            firstRes ?: searchRes.data
+            searchRes.tracks
                 ?.items
-                ?.filter { it?.duration?.let { dur -> abs(dur - durationSeconds) <= 1 } ?: false }
-                ?.minByOrNull { abs((it?.duration ?: 0) - durationSeconds) }
+                ?.filterNotNull()
+                ?.filter { it.duration?.let { dur -> abs(dur - durationSeconds) <= 1 } ?: false }
+                ?.minByOrNull { abs((it.duration ?: 0) - durationSeconds) }
                 ?: throw Exception("No matching track found")
+        val attrs = matchedItem.audioAnalysisAttributes
         TidalMetadataResult(
-            bpm = matchedItem.bpm,
-            musicKey = matchedItem.key,
-            keyScale = matchedItem.keyScale,
+            bpm = attrs?.bpm?.toDoubleOrNull()?.toInt(),
+            musicKey = attrs?.key,
+            keyScale = attrs?.keyScale,
         )
     }
 
@@ -1983,7 +1964,6 @@ class YouTube {
         track: SongItem,
         filePath: String,
         videoId: String,
-        should320kbps: Pair<Boolean, String>,
         isVideo: Boolean = false,
     ): Flow<DownloadProgress> =
         channelFlow {
@@ -2015,54 +1995,8 @@ class YouTube {
                         ).maxByOrNull { it?.bitrate ?: 0 }
                     Logger.d(TAG, "Audio Format $audioFormat")
                     Logger.d(TAG, "Video Format $videoFormat")
-                    val durationSecond =
-                        playerResponse.second.videoDetails
-                            ?.lengthSeconds
-                            ?.toIntOrNull()
                     val audioUrl =
-                        if (should320kbps.first && !isVideo && durationSecond != null) {
-                            val your320kbpsUrl = should320kbps.second
-                            Logger.d("Stream", "Prefer 320kbps enabled ${playerResponse.second.videoDetails}")
-                            val title = playerResponse.second.videoDetails?.title ?: ""
-                            val author = playerResponse.second.videoDetails?.author ?: ""
-                            val q =
-                                "$title $author"
-                                    .replace(
-                                        Regex("\\((feat\\.|ft.|cùng với|con|mukana|com|avec|合作音乐人: ) "),
-                                        " ",
-                                    ).replace(
-                                        Regex("( và | & | и | e | und |, |和| dan)"),
-                                        " ",
-                                    ).replace("  ", " ")
-                                    .replace(Regex("([()])"), "")
-                                    .replace(".", " ")
-                                    .replace("  ", " ")
-                            Logger.d("Stream", "Search query for 320kbps: $q")
-                            val res =
-                                getTidalStream(your320kbpsUrl, q, durationSecond)
-                                    .apply {
-                                        onSuccess {
-                                            Logger.w("Stream", "Tidal response: $this")
-                                        }.onFailure {
-                                            Logger.e("Stream", "Tidal error: ${it.message}", it)
-                                        }
-                                    }.getOrNull()
-                            val audioData =
-                                res
-                                    ?.stream
-                                    ?.data
-                                    ?.manifest
-                                    ?.decodeTidalManifest()
-                            if (audioData != null) {
-                                Logger.d("Stream", "Found potential 320kbps stream from Tidal: $res")
-                                audioData.urls.firstOrNull() ?: audioFormat?.url
-                            } else {
-                                Logger.d("Stream", "Found potential 320kbps stream from Tidal manifest DASH: ${res?.stream?.data?.manifest}")
-                                audioFormat?.url
-                            }
-                        } else {
-                            audioFormat?.url
-                        } ?: run {
+                        audioFormat?.url ?: run {
                             trySend(DownloadProgress.failed("Audio format url is null"))
                             return@channelFlow
                         }
@@ -2138,5 +2072,6 @@ class YouTube {
         private const val VISITOR_DATA_PREFIX = "Cgt"
 
         const val DEFAULT_VISITOR_DATA = "CgtsZG1ySnZiQWtSbyiMjuGSBg%3D%3D"
+
     }
 }

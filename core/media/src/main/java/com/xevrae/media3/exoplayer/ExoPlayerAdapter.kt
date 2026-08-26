@@ -69,6 +69,8 @@ class ExoPlayerAdapter(
 
     override fun seekToPrevious() = exoPlayer.seekToPrevious()
 
+    override fun seekToPreviousMediaItem() = exoPlayer.seekToPreviousMediaItem()
+
     override fun prepare() = exoPlayer.prepare()
 
     // Media item management
@@ -216,6 +218,17 @@ class ExoPlayerAdapter(
         set(value) {
             exoPlayer.volume = value
         }
+
+    /**
+     * Stored but not wired to anything. The sleep fade is applied by a SleepFadeAudioProcessor in
+     * the audio pipeline, and this adapter does not build its own renderers — it also is not the
+     * one Koin constructs (see Media3ServiceModule, which builds CrossfadeExoPlayerAdapter).
+     * Anything reviving this class needs to add that processor to its sink.
+     */
+    override var sleepFadeFactor: Float = 1f
+
+    /** Stored but unused: this adapter has no crossfade, so there is nothing to hold back. */
+    override var albumTrackIds: Set<String> = emptySet()
 
     override var skipSilenceEnabled: Boolean
         get() = exoPlayer.skipSilenceEnabled

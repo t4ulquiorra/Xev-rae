@@ -135,20 +135,5 @@ data class YouTubeClient(
                 utcOffsetMinutes = 0,
                 xClientName = 2,
             )
-
-        val ANDROID_VR =
-            YouTubeClient(
-                clientName = "ANDROID_VR",
-                clientVersion = "1.60.19",
-                api_key = "AIzaSyAOghZGza2MQSZkY_zfZ370N-PUdXEo8AI",
-                userAgent = "com.google.android.apps.youtube.vr.oculus/1.60.19 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip",
-                osName = "Android",
-                osVersion = "12L",
-                deviceMake = "Oculus",
-                deviceModel = "Quest 3",
-                timeZone = "UTC",
-                utcOffsetMinutes = 0,
-                xClientName = 63,
-            )
     }
 }

@@ -18,7 +18,7 @@ import com.xevrae.domain.data.player.GenericCommandButton
 import com.xevrae.domain.mediaservice.handler.RepeatState
 import com.xevrae.domain.utils.connectArtists
 import com.xevrae.domain.utils.toListName
-import com.xevrae.android.media.R
+import com.xevrae.media3.R
 
 fun MediaItem?.toSongEntity(): SongEntity? =
     if (this != null) {
@@ -129,6 +129,14 @@ fun GenericCommandButton.toCommandButton(context: Context): CommandButton =
                     } else {
                         CommandButton.ICON_HEART_UNFILLED
                     },
+                    // Resource fallback for hosts (e.g. AA templated surface) that
+                    // don't map the media3 icon constants
+                ).setCustomIconResId(
+                    if (liked) {
+                        R.drawable.baseline_favorite_24
+                    } else {
+                        R.drawable.baseline_favorite_border_24
+                    },
                 ).setDisplayName(
                     if (liked) {
                         context.getString(R.string.liked)
@@ -186,7 +194,10 @@ fun GenericCommandButton.toCommandButton(context: Context): CommandButton =
                     } else {
                         CommandButton.ICON_SHUFFLE_OFF
                     },
-                ).setDisplayName(context.getString(R.string.shuffle))
+                    // Resource fallback for hosts that don't map the media3 icon
+                    // constants (AA templated surface renders a gear otherwise)
+                ).setCustomIconResId(R.drawable.baseline_shuffle_24)
+                .setDisplayName(context.getString(R.string.shuffle))
                 .setSessionCommand(
                     SessionCommand(
                         MEDIA_CUSTOM_COMMAND.SHUFFLE,
@@ -196,6 +207,26 @@ fun GenericCommandButton.toCommandButton(context: Context): CommandButton =
         }
     }
 
+/**
+ * True only when every byte of [key] is on disk *at this moment* and [position] falls
+ * inside the resource.
+ *
+ * KEY_CONTENT_LENGTH only says the resource length is known — CacheDataSource writes it
+ * as soon as an unbounded request resolves a length, long before the download finishes.
+ * The `isCached(0, total)` range check is what actually proves completeness, so both
+ * halves are load-bearing; dropping either one lets a partial resource pass.
+ *
+ * [position] is checked because the recorded length can itself be short: an upstream that
+ * closes its body early makes CacheDataSource store the truncated length as if it were the
+ * whole resource. Serving that as a cache hit means the reader eventually asks for a
+ * position past the end, where CacheDataSource computes a negative remainder and throws
+ * ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE — another error Media3 refuses to retry.
+ * Falling through to a real URL instead costs one wasted resolve at end of track.
+ *
+ * The answer is a snapshot, not a lease: nothing here locks the spans, and an evictor or
+ * a "clear cache" tap can delete them straight afterwards. Callers must keep the window
+ * they trust this for short.
+ */
 @UnstableApi
 internal fun Cache.isFullyCached(
     key: String,
