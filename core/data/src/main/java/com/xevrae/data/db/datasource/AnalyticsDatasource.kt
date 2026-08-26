@@ -1,6 +1,6 @@
 package com.xevrae.data.db.datasource
 
-import DatabaseDao
+import com.xevrae.data.db.DatabaseDao
 import com.xevrae.domain.data.entities.analytics.PlaybackEventEntity
 import com.xevrae.domain.extension.beforeXDays
 import com.xevrae.domain.extension.now

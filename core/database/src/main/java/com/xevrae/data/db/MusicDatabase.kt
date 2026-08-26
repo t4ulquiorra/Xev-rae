@@ -35,7 +35,7 @@ import com.xevrae.domain.data.entities.analytics.PlaybackEventEntity
         NotificationEntity::class, TranslatedLyricsEntity::class, PodcastsEntity::class, EpisodeEntity::class,
         YourYouTubePlaylistList::class, PlaybackEventEntity::class, EventArtistEntity::class
     ],
-    version = 22,
+    version = 24,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 2, to = 3), AutoMigration(
@@ -70,9 +70,19 @@ import com.xevrae.domain.data.entities.analytics.PlaybackEventEntity
         AutoMigration(21, 22),
         AutoMigration(20, 22),
         AutoMigration(19, 22),
+        AutoMigration(22, 23),
+        AutoMigration(21, 23),
+        AutoMigration(20, 23),
+        AutoMigration(23, 24),
+        AutoMigration(22, 24),
+        AutoMigration(21, 24),
     ],
 )
 @TypeConverters(Converters::class)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun getDatabaseDao(): DatabaseDao
+
+    suspend fun vacuum() {
+        useWriterConnection { it.execSQL("VACUUM") }
+    }
 }
