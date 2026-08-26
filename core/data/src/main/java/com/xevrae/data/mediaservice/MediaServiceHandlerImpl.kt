@@ -445,7 +445,7 @@ class MediaServiceHandlerImpl(
                                             // safe field read from Dispatchers.IO, unlike player.isPlaying.
                                             if (!controlState.value.isPlaying) return@collectLatest
                                             discordRPC
-                                                ?.updateSong(snap.progressMs, snap.durationMs, snap.speed, snap.song)
+                                                ?.updateSong(snap.song)
                                                 ?.onFailure { Logger.e(TAG, "Discord RPC update failed: ${it.message}") }
                                         }
                                     }
@@ -547,9 +547,6 @@ class MediaServiceHandlerImpl(
                             )
                         }
                         updateDiscordRpc(songEntity)
-                        // Launched separately: "now playing" is a network round trip, and this job
-                        // still has the rest of the track state to publish.
-                        coroutineScope.launch { lastfmScrobbler.onTrackStarted(songEntity) }
                     } else {
                         _controlState.update { it.copy(isLiked = false) }
                         var thumbUrl =
@@ -575,9 +572,6 @@ class MediaServiceHandlerImpl(
                             )
                         }
                         updateDiscordRpc(songEntity)
-                        // Launched separately: "now playing" is a network round trip, and this job
-                        // still has the rest of the track state to publish.
-                        coroutineScope.launch { lastfmScrobbler.onTrackStarted(songEntity) }
                     }
                     Logger.w(TAG, "getDataOfNowPlayingState: ${nowPlayingState.value}")
                 }
@@ -838,10 +832,6 @@ class MediaServiceHandlerImpl(
                     if (sinceLastPositionSaveMs >= positionPersistIntervalMs) {
                         sinceLastPositionSaveMs = 0
                         mayBeSaveRecentPosition()
-                        // Riding the existing 5s tick instead of adding one: the scrobble point is
-                        // half the track or four minutes, so five seconds of granularity is plenty
-                        // and the 100ms loop stays as cheap as it was.
-                        lastfmScrobbler.onProgress(player.currentPosition)
                     }
                 }
             }
