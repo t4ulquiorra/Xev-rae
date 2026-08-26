@@ -1,12 +1,12 @@
 package com.xevrae.data.db.datasource
 
-import com.xevrae.data.db.DatabaseDao
+import DatabaseDao
 import com.xevrae.domain.data.entities.analytics.PlaybackEventEntity
 import com.xevrae.domain.extension.beforeXDays
 import com.xevrae.domain.extension.now
 import kotlinx.datetime.LocalDateTime
 
-class AnalyticsDatasource(
+internal class AnalyticsDatasource(
     private val databaseDao: DatabaseDao,
 ) {
     suspend fun insertPlaybackEvent(

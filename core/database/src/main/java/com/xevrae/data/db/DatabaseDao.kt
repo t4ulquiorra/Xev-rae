@@ -40,6 +40,14 @@ import com.xevrae.domain.extension.now
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 
+/**
+ * The album name older builds stored when they could not find a real one.
+ *
+ * Kept in step with the copy in [com.xevrae.data.db.datasource.LocalDataSource] and with the
+ * literal baked into [DatabaseDao.refreshAlbumIfPlaceholder]'s WHERE clause.
+ */
+private const val PLACEHOLDER_ALBUM_NAME = "Album"
+
 @Dao
 interface DatabaseDao {
     // Transaction request with multiple queries
@@ -248,6 +256,88 @@ interface DatabaseDao {
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertSong(song: SongEntity): Long
 
+    /**
+     * Stores a batch of tracks in one transaction.
+     *
+     * Every other path inserts one song at a time through
+     * [com.xevrae.data.db.datasource.LocalDataSource.insertSong], which is right when a track
+     * arrives on its own but costs a commit each time. An import writes thousands in a row, so the
+     * batch collapses them into a handful of commits instead.
+     *
+     * The per-row semantics are deliberately identical to that single-song path: the insert is
+     * IGNORE, and a row that was dropped because it already exists (rowId -1) gets the same two
+     * self-repair passes — see [refreshAlbumIfPlaceholder] and [refreshArtists] for why they exist
+     * and why their WHERE clauses are what keep good data from being overwritten.
+     */
+    @Transaction
+    suspend fun insertSongs(songs: List<SongEntity>) {
+        songs.forEach { song ->
+            val rowId = insertSong(song)
+            if (rowId == -1L) {
+                val albumName = song.albumName
+                if (!albumName.isNullOrBlank() && albumName != PLACEHOLDER_ALBUM_NAME) {
+                    refreshAlbumIfPlaceholder(
+                        videoId = song.videoId,
+                        albumName = albumName,
+                        albumId = song.albumId,
+                    )
+                }
+                val artistName = song.artistName
+                if (!artistName.isNullOrEmpty()) {
+                    refreshArtists(
+                        videoId = song.videoId,
+                        artistName = artistName,
+                        artistId = song.artistId,
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Fills in an album name that an older parse never had.
+     *
+     * Rows written before the playlist parser read the album column carry the literal string
+     * "Album" — a placeholder invented because the old code took the album's browse id from the
+     * context menu, which has an id but no name. Those rows are never refreshed on their own:
+     * [insertSong] is IGNORE, so every later encounter with the same track is discarded.
+     *
+     * The WHERE clause is the safety catch, not just a filter. A row that already holds a real
+     * album name is untouched no matter who calls this, so a caller holding a sparser entity —
+     * the playback path, say — cannot overwrite good data with worse.
+     */
+    @Query(
+        "UPDATE song SET albumName = :albumName, albumId = :albumId " +
+            "WHERE videoId = :videoId AND (albumName IS NULL OR albumName = '' OR albumName = 'Album')",
+    )
+    suspend fun refreshAlbumIfPlaceholder(
+        videoId: String,
+        albumName: String,
+        albumId: String?,
+    )
+
+    /**
+     * Replaces an artist list that an older parse polluted with the row's trailing metadata.
+     *
+     * The parser used to split the subtitle column on " • " and keep every group, so a row could
+     * be stored as `["JENNIE", "13M plays"]` — the view count read as a second artist. It now
+     * keeps only the first group, but [insertSong] is IGNORE, so a row already in the database
+     * never learns the corrected list on its own.
+     *
+     * The WHERE clause is the safety catch, exactly as in [refreshAlbumIfPlaceholder]: the update
+     * only lands when the stored list actually differs from the fresh one, so repeatedly seeing
+     * the same track costs nothing and a caller cannot rewrite a row with what it already holds.
+     */
+    @Query(
+        "UPDATE song SET artistName = :artistName, artistId = :artistId " +
+            "WHERE videoId = :videoId AND artistName IS NOT :artistName",
+    )
+    suspend fun refreshArtists(
+        videoId: String,
+        artistName: List<String>,
+        artistId: List<String>?,
+    )
+
     @Query("UPDATE song SET canvasUrl = :canvasUrl WHERE videoId = :videoId")
     suspend fun updateCanvasUrl(
         videoId: String,
@@ -263,6 +353,12 @@ interface DatabaseDao {
     @Query("UPDATE song SET thumbnails = :thumbnails WHERE videoId = :videoId")
     suspend fun updateThumbnailsSongEntity(
         thumbnails: String,
+        videoId: String,
+    ): Int
+
+    @Query("UPDATE song SET videoType = :videoType WHERE videoId = :videoId")
+    suspend fun updateVideoTypeSongEntity(
+        videoType: String,
         videoId: String,
     ): Int
 
@@ -329,6 +425,13 @@ interface DatabaseDao {
     suspend fun updateArtistImage(
         channelId: String,
         thumbnails: String,
+    )
+
+    @Query("UPDATE artist SET nameLogoUrl = :nameLogoUrl, nameLogoColor = :nameLogoColor WHERE channelId = :channelId")
+    suspend fun updateArtistNameLogo(
+        channelId: String,
+        nameLogoUrl: String?,
+        nameLogoColor: String?,
     )
 
     @Query("UPDATE artist SET followed = :followed, followedAt = :followedAt WHERE channelId = :channelId")
@@ -465,8 +568,44 @@ interface DatabaseDao {
     @Query("SELECT * FROM local_playlist WHERE id = :id")
     suspend fun getLocalPlaylist(id: Long): LocalPlaylistEntity?
 
+    /**
+     * Returns the generated `local_playlist.id`, or -1 when IGNORE dropped the row.
+     *
+     * `id` is the autoGenerate primary key, so the rowId Room hands back *is* the playlist id.
+     * Callers that only create a playlist can keep ignoring the value.
+     */
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-    suspend fun insertLocalPlaylist(localPlaylist: LocalPlaylistEntity)
+    suspend fun insertLocalPlaylist(localPlaylist: LocalPlaylistEntity): Long
+
+    /**
+     * Creates a playlist and its `pair_song_local_playlist` rows in one transaction.
+     *
+     * [videoIds] must already be filtered down to ids that have a `song` row — the pair table has a
+     * foreign key to `song.videoId` and the insert fails otherwise. Position is the index in
+     * [videoIds], so the caller is responsible for handing over a contiguous list.
+     *
+     * @return the new playlist id, or -1 when the playlist row was not written.
+     */
+    @Transaction
+    suspend fun insertLocalPlaylistWithTracks(
+        localPlaylist: LocalPlaylistEntity,
+        videoIds: List<String>,
+    ): Long {
+        val playlistId = insertLocalPlaylist(localPlaylist)
+        if (playlistId == -1L) return -1L
+        val addedAt = now()
+        videoIds.forEachIndexed { index, videoId ->
+            insertPairSongLocalPlaylist(
+                PairSongLocalPlaylist(
+                    playlistId = playlistId,
+                    songId = videoId,
+                    position = index,
+                    inPlaylist = addedAt,
+                ),
+            )
+        }
+        return playlistId
+    }
 
     @Query("DELETE FROM local_playlist WHERE id = :id")
     suspend fun deleteLocalPlaylist(id: Long)
@@ -541,6 +680,10 @@ interface DatabaseDao {
     suspend fun checkpoint() {
         raw(RoomRawQuery("pragma wal_checkpoint(full)"))
     }
+
+    // VACUUM deliberately does NOT live here: [raw] is generated as a read-only statement, and
+    // Room's reader connections run under `PRAGMA query_only = 1`, which rejects it. See
+    // `MusicDatabase.vacuum()`.
 
     @Query("SELECT * FROM song WHERE downloadState = 1 OR downloadState = 2 ORDER BY downloadedAt ASC LIMIT :limit OFFSET :offset")
     suspend fun getPreparingSongs(
@@ -649,6 +792,29 @@ interface DatabaseDao {
     )
 
     @Query(
+        "SELECT * FROM pair_song_local_playlist WHERE playlistId = :playlistId ORDER BY position ASC",
+    )
+    suspend fun getAllPlaylistPairSongByPosition(playlistId: Long): List<PairSongLocalPlaylist>
+
+    @Query(
+        "UPDATE pair_song_local_playlist SET position = position + 1 WHERE playlistId = :playlistId AND position >= :from AND position < :to",
+    )
+    suspend fun shiftPositionsForward(
+        playlistId: Long,
+        from: Int,
+        to: Int,
+    )
+
+    @Query(
+        "UPDATE pair_song_local_playlist SET position = position - 1 WHERE playlistId = :playlistId AND position > :from AND position <= :to",
+    )
+    suspend fun shiftPositionsBackward(
+        playlistId: Long,
+        from: Int,
+        to: Int,
+    )
+
+    @Query(
         "SELECT * FROM pair_song_local_playlist WHERE playlistId = :playlistId AND position >= :from AND position < :to ORDER BY position " +
             "LIMIT 50",
     )
@@ -721,8 +887,14 @@ interface DatabaseDao {
     @Query("SELECT * FROM notification ORDER BY time DESC LIMIT 100")
     suspend fun getAllNotification(): List<NotificationEntity>
 
+    @Query("SELECT COUNT(*) FROM notification WHERE link = :link")
+    suspend fun countNotificationByLink(link: String): Int
+
     @Query("DELETE FROM notification WHERE id = :id")
     suspend fun deleteNotification(id: Long)
+
+    @Query("DELETE FROM notification WHERE channelId = :channelId")
+    suspend fun deleteNotificationsByChannelId(channelId: String)
 
     @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertTranslatedLyrics(translatedLyricsEntity: TranslatedLyricsEntity)
@@ -855,6 +1027,216 @@ interface DatabaseDao {
 
     @Query("DELETE FROM playback_event WHERE timestamp < :cutoffTimestamp")
     suspend fun deleteOldPlaybackEvents(cutoffTimestamp: LocalDateTime)
+
+    // ===== Clear listening history + drop orphaned songs =====
+    //
+    // "Orphaned" means the videoId appears nowhere else at all. Three of the referencing tables key
+    // on the id directly (pair_song_local_playlist.songId, set_video_id.videoId,
+    // podcast_episode_table.videoId); the other five keep ids inside a JSON array column
+    // (album.tracks, playlist.tracks, local_playlist.tracks, podcast_table.listEpisodes,
+    // queue.listTrack) and are matched as quoted tokens in that text.
+    //
+    // Which is why the containers are swept FIRST — artists, podcasts, albums, playlists — and the
+    // songs only after. Cached playlists alone were keeping eleven thousand songs alive, so the
+    // song sweep on its own deleted nothing at all.
+    //
+    // Every id interpolated into a LIKE goes through replace() and the pattern declares ESCAPE '\'.
+    // `_` and `%` are wildcards there, and over a thousand videoIds contain `_`, so an unescaped
+    // `abc_def` also matches `abcXdef` and protects a row it has nothing to do with. Room cannot
+    // escape a value that comes from a column rather than a bind parameter, hence the replace().
+    //
+    // Room cannot return a converted list column from a single-column SELECT — it reads the outer
+    // List as "the rows" and then has no way to build the inner one — so pulling these lists into
+    // Kotlin to filter them is not an option anyway.
+
+    @Query("DELETE FROM playback_event")
+    suspend fun deleteAllPlaybackEvents()
+
+    /**
+     * Artists cached only because they turned up while browsing.
+     *
+     * `song` carries its own `artistName`/`artistId`, so no track loses the name it displays, and the
+     * artist page refetches everything it shows anyway — except that the artist a kept song belongs
+     * to is spared regardless. Deleting one takes `nameLogoUrl`/`nameLogoColor` with it, which
+     * `updateArtistNameLogo` builds once and no refetch reproduces, and it leaves the page of a song
+     * still in the library with nothing at all to draw offline.
+     *
+     * `song.artistId` is a converted `List<String>`, stored as a JSON array, so the channel id is
+     * matched as a quoted token the same way the `tracks` columns are — with the `replace()` +
+     * ESCAPE '\' treatment, because over a thousand ids contain `_` and it is a LIKE wildcard.
+     */
+    @Query(
+        "DELETE FROM artist WHERE followed = 0 AND " +
+            "NOT EXISTS (SELECT 1 FROM song s WHERE (s.liked = 1 OR s.downloadState != 0) AND s.artistId LIKE " +
+            "'%\"' || replace(replace(replace(artist.channelId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\')",
+    )
+    suspend fun deleteUnfollowedArtists(): Int
+
+    /**
+     * Notifications left behind by an unfollow.
+     *
+     * Unfollowing only flipped `artist.followed` until the delete was added to
+     * `ArtistRepositoryImpl.updateFollowedStatus`, so databases that predate it still carry these —
+     * and after [deleteUnfollowedArtists] most no longer have an artist row to point back at. What
+     * decides it here is the follow, not the row: the artists that statement spares are unfollowed
+     * too, so their notifications go with the rest.
+     * `artist.channelId` is NOT NULL, so the subquery cannot smuggle a NULL into the NOT IN.
+     */
+    @Query("DELETE FROM notification WHERE channelId NOT IN (SELECT channelId FROM artist WHERE followed = 1)")
+    suspend fun deleteNotificationsOfUnfollowedArtists(): Int
+
+    /** The new-releases tracking row for an artist the user no longer follows. See [deleteNotificationsOfUnfollowedArtists]. */
+    @Query("DELETE FROM followed_artist_single_and_album WHERE channelId NOT IN (SELECT channelId FROM artist WHERE followed = 1)")
+    suspend fun deleteFollowedArtistReleasesOfUnfollowedArtists(): Int
+
+    /**
+     * Podcasts the user never favorited.
+     *
+     * `podcast_episode_table` has a CASCADE foreign key onto this table, so the episodes go with
+     * them — which is the point, since an episode row is what keeps its song out of the orphan set.
+     */
+    @Query("DELETE FROM podcast_table WHERE isFavorite = 0")
+    suspend fun deleteUnfavoritedPodcasts(): Int
+
+    /**
+     * Cached albums the user neither liked nor downloaded.
+     *
+     * `followed_artist_single_and_album` is the new-releases feed for followed artists and stores
+     * browse ids inside its `album`/`single` JSON, so an album still listed there is one the user is
+     * being shown — deleting it would blank a row of that feed.
+     *
+     * An album that a kept song points at through `song.albumId` is spared too. The song survives
+     * either way, but its album page would lose the cached track list and thumbnails and could no
+     * longer render offline. Unlike the columns around it `albumId` holds one plain id rather than
+     * JSON, so it is compared directly; where it is NULL the comparison is NULL and the album is
+     * simply not protected, which is the wanted answer.
+     */
+    @Query(
+        "DELETE FROM album WHERE liked = 0 AND downloadState = 0 AND " +
+            "NOT EXISTS (SELECT 1 FROM song s WHERE s.albumId = album.browseId AND (s.liked = 1 OR s.downloadState != 0)) AND " +
+            "NOT EXISTS (SELECT 1 FROM followed_artist_single_and_album f WHERE f.album LIKE " +
+            "'%\"' || replace(replace(replace(album.browseId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\' " +
+            "OR f.single LIKE " +
+            "'%\"' || replace(replace(replace(album.browseId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\')",
+    )
+    suspend fun deleteUnreferencedAlbums(): Int
+
+    /**
+     * Cached YouTube playlists the user neither liked nor downloaded.
+     *
+     * A row in `set_video_id` or a `local_playlist.youtubePlaylistId` means the playlist is synced
+     * with one the user owns, and `your_youtube_playlist_list` is the cached index of their YouTube
+     * library — all three are references, not state.
+     *
+     * `local_playlist.youtubePlaylistId` is nullable and mostly NULL, and `NOT IN` over a subquery
+     * that yields a single NULL is NULL for **every** row: without the IS NOT NULL guard this
+     * statement matches nothing whatsoever. The other two columns are NOT NULL and need no guard.
+     */
+    @Query(
+        "DELETE FROM playlist WHERE liked = 0 AND downloadState = 0 AND " +
+            "id NOT IN (SELECT youtubePlaylistId FROM set_video_id) AND " +
+            "id NOT IN (SELECT youtubePlaylistId FROM local_playlist WHERE youtubePlaylistId IS NOT NULL) AND " +
+            "NOT EXISTS (SELECT 1 FROM your_youtube_playlist_list y WHERE y.listBrowseIds LIKE " +
+            "'%\"' || replace(replace(replace(playlist.id, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\')",
+    )
+    suspend fun deleteUnreferencedPlaylists(): Int
+
+    /**
+     * Every song the rest of the database has stopped pointing at.
+     *
+     * `set_video_id` counts as a reference on purpose: a row there means the song sits in one of the
+     * user's YouTube playlists, and it carries the `setVideoId` needed to reorder or remove it
+     * there. That holds even for playlists never saved locally, so the `tracks` columns alone would
+     * not catch it.
+     *
+     * `liked` and `downloadState` are not references at all — they are state on the song row itself,
+     * and they are the ONLY storage the Favorites and Downloaded libraries have. A song liked or
+     * downloaded straight from search belongs to no playlist, so without these two predicates the
+     * literal "referenced by nothing" reading would wipe out both libraries. `downloadState = 0`
+     * also covers a download still in flight, which would otherwise be deleted mid-transfer.
+     *
+     * The last five conditions search columns that hold a JSON array rather than an id. Matching the
+     * id **with its surrounding quotes** is what makes that safe: ids live in the JSON as `"abc123"`,
+     * so the quotes pin the match to a whole token and it cannot land inside a longer id. It is a
+     * table scan, but those tables hold tens of rows, not thousands — and it replaces deserialising
+     * every playlist and the entire saved queue into objects just to read one field back out.
+     */
+    @Query(
+        "SELECT videoId FROM song WHERE " +
+            "liked = 0 AND downloadState = 0 AND " +
+            "videoId NOT IN (SELECT songId FROM pair_song_local_playlist) AND " +
+            "videoId NOT IN (SELECT videoId FROM set_video_id) AND " +
+            "videoId NOT IN (SELECT videoId FROM podcast_episode_table) AND " +
+            "NOT EXISTS (SELECT 1 FROM album WHERE album.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM playlist WHERE playlist.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM local_playlist WHERE local_playlist.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM podcast_table WHERE podcast_table.listEpisodes LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM queue WHERE queue.listTrack LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\')",
+    )
+    suspend fun getOrphanedSongIds(): List<String>
+
+    /**
+     * Deleted in batches by the caller: SQLite caps how many bind parameters one statement takes.
+     *
+     * The orphan conditions from [getOrphanedSongIds] are repeated here rather than trusting the ids
+     * handed in, because the user keeps playing and browsing between the two statements. Re-checking
+     * closes that window, and it matters most for `pair_song_local_playlist`: it cascades on song
+     * deletion, so a song added to a local playlist mid-sweep would otherwise be pulled straight
+     * back out of it.
+     */
+    @Query(
+        "DELETE FROM song WHERE videoId IN (:videoIds) AND " +
+            "liked = 0 AND downloadState = 0 AND " +
+            "videoId NOT IN (SELECT songId FROM pair_song_local_playlist) AND " +
+            "videoId NOT IN (SELECT videoId FROM set_video_id) AND " +
+            "videoId NOT IN (SELECT videoId FROM podcast_episode_table) AND " +
+            "NOT EXISTS (SELECT 1 FROM album WHERE album.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM playlist WHERE playlist.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM local_playlist WHERE local_playlist.tracks LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM podcast_table WHERE podcast_table.listEpisodes LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\') AND " +
+            "NOT EXISTS (SELECT 1 FROM queue WHERE queue.listTrack LIKE " +
+            "'%\"' || replace(replace(replace(song.videoId, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '\"%' ESCAPE '\\')",
+    )
+    suspend fun deleteSongsByIds(videoIds: List<String>): Int
+
+    // Run AFTER the song delete, and only for ids that actually went: the statement above may spare
+    // a song, and that song must keep its lyrics.
+    @Query("DELETE FROM lyrics WHERE videoId IN (:videoIds) AND videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteLyricsByIds(videoIds: List<String>)
+
+    @Query("DELETE FROM translated_lyrics WHERE videoId IN (:videoIds) AND videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteTranslatedLyricsByIds(videoIds: List<String>)
+
+    @Query("DELETE FROM new_format WHERE videoId IN (:videoIds) AND videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteNewFormatsByIds(videoIds: List<String>)
+
+    @Query("DELETE FROM song_info WHERE videoId IN (:videoIds) AND videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteSongInfoByIds(videoIds: List<String>)
+
+    // The four deletes above only reach ids that are in flight, so a row whose song vanished in some
+    // earlier build — or never had one — is unreachable to them and has accumulated ever since.
+    // `song.videoId` is the primary key and NOT NULL, so these NOT INs cannot go NULL.
+
+    @Query("DELETE FROM new_format WHERE videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteStaleNewFormats(): Int
+
+    @Query("DELETE FROM lyrics WHERE videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteStaleLyrics(): Int
+
+    @Query("DELETE FROM translated_lyrics WHERE videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteStaleTranslatedLyrics(): Int
+
+    @Query("DELETE FROM song_info WHERE videoId NOT IN (SELECT videoId FROM song)")
+    suspend fun deleteStaleSongInfo(): Int
 
     // Query event
     @Query(

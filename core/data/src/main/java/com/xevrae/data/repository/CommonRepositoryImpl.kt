@@ -281,9 +281,8 @@ class CommonRepositoryImpl(
         database.close()
     }
 
-    override fun getDatabasePath() =
-        com.xevrae.data.db
-            .getDatabasePath()
+    override fun getDatabasePath(): String? =
+        com.xevrae.common.ContextHolder.context.getDatabasePath(com.xevrae.common.DB_NAME).path
 
     override suspend fun databaseDaoCheckpoint() = localDataSource.checkpoint()
 
