@@ -539,6 +539,7 @@ fun App(viewModel: SharedViewModel = hiltViewModel()) {
                                     AppNavigationGraph(
                                         innerPadding = innerPadding,
                                         navController = navController,
+                                        sharedViewModel = viewModel,
                                         hideNavBar = {
                                             isNavBarVisible = false
                                         },

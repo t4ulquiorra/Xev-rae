@@ -298,12 +298,12 @@ fun HomeScreen(
     }
     LaunchedEffect(key1 = reloadDestination) {
         if (reloadDestination == HomeDestination::class) {
-            if (scrollState.firstVisibleItemIndex > 1) {
-                Logger.w("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
+            if (scrollState.firstVisibleItemIndex > 0 || scrollState.firstVisibleItemScrollOffset > 0) {
+                Logger.w("HomeScreen", "scrollState not at top (index=${scrollState.firstVisibleItemIndex}, offset=${scrollState.firstVisibleItemScrollOffset}), scrolling to top")
                 scrollState.animateScrollToItem(0)
                 sharedViewModel.reloadDestinationDone()
             } else {
-                Logger.w("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
+                Logger.w("HomeScreen", "scrollState already at top, triggering onRefresh")
                 onRefresh.invoke()
             }
         }

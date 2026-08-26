@@ -19,6 +19,8 @@ import com.xevrae.ui.screen.home.HomeScreen
 import com.xevrae.ui.screen.library.LibraryScreen
 import com.xevrae.ui.screen.other.SearchScreen
 import com.xevrae.ui.screen.player.FullscreenPlayer
+import com.xevrae.viewModel.SharedViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 @ExperimentalMaterial3Api
@@ -26,6 +28,7 @@ import com.xevrae.ui.screen.player.FullscreenPlayer
 fun AppNavigationGraph(
     innerPadding: PaddingValues,
     navController: NavHostController,
+    sharedViewModel: SharedViewModel = hiltViewModel(),
     startDestination: Any = HomeDestination,
     hideNavBar: () -> Unit = { },
     showNavBar: (shouldShowNowPlayingSheet: Boolean) -> Unit = { },
@@ -52,6 +55,7 @@ fun AppNavigationGraph(
         // Bottom bar destinations
         composable<HomeDestination> {
             HomeScreen(
+                sharedViewModel = sharedViewModel,
                 onScrolling = onScrolling,
                 onOpenLeftPanel = showLeftPanel,
                 navController = navController,
