@@ -762,16 +762,16 @@ fun NowPlayingScreenContent(
     // Vote Dialog
     if (showVoteDialog) {
         val canVoteLyrics =
-            screenDataState.lyricsData?.lyricsProvider == LyricsProvider.XEVRAE &&
+            (screenDataState.lyricsData?.lyricsProvider == LyricsProvider.SIMPMUSIC || screenDataState.lyricsData?.lyricsProvider == LyricsProvider.XEVRAE) &&
                 screenDataState.lyricsData
                     ?.lyrics
-                    ?.xevraeLyrics != null
+                    ?.simpMusicLyrics != null
         val canVoteTranslatedLyrics =
-            screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.XEVRAE &&
+            (screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.SIMPMUSIC || screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.XEVRAE) &&
                 screenDataState.lyricsData
                     ?.translatedLyrics
                     ?.first
-                    ?.xevraeLyrics != null
+                    ?.simpMusicLyrics != null
 
         VoteLyricsDialog(
             canVoteLyrics = canVoteLyrics,
@@ -1986,16 +1986,16 @@ fun NowPlayingScreenContent(
                                         }
                                         Spacer(modifier = Modifier.weight(1f))
                                         val canVoteLyrics =
-                                            screenDataState.lyricsData?.lyricsProvider == LyricsProvider.XEVRAE &&
+                                            (screenDataState.lyricsData?.lyricsProvider == LyricsProvider.SIMPMUSIC || screenDataState.lyricsData?.lyricsProvider == LyricsProvider.XEVRAE) &&
                                                 screenDataState.lyricsData
                                                     ?.lyrics
-                                                    ?.xevraeLyrics != null
+                                                    ?.simpMusicLyrics != null
                                         val canVoteTranslatedLyrics =
-                                            screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.XEVRAE &&
+                                            (screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.SIMPMUSIC || screenDataState.lyricsData?.translatedLyrics?.second == LyricsProvider.XEVRAE) &&
                                                 screenDataState.lyricsData
                                                     ?.translatedLyrics
                                                     ?.first
-                                                    ?.xevraeLyrics != null
+                                                    ?.simpMusicLyrics != null
                                         if (canVoteLyrics || canVoteTranslatedLyrics) {
                                             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                                                 DimIconButton(
