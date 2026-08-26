@@ -38,7 +38,7 @@ private const val DELETE_BATCH_SIZE = 400
  */
 private const val PLACEHOLDER_ALBUM_NAME = "Album"
 
-internal class LocalDataSource(
+class LocalDataSource(
     private val databaseDao: DatabaseDao,
     private val musicDatabase: MusicDatabase,
 ) {

@@ -51,7 +51,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideLocalDataSource(databaseDao: DatabaseDao): LocalDataSource = LocalDataSource(databaseDao)
+    fun provideLocalDataSource(databaseDao: DatabaseDao, database: MusicDatabase): LocalDataSource = LocalDataSource(databaseDao, database)
 
     @Provides
     @Singleton

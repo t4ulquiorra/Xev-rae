@@ -22,7 +22,6 @@ import com.xevrae.common.LOCAL_PLAYLIST_ID_SAVED_QUEUE
 import com.xevrae.common.MERGING_DATA_TYPE
 import com.xevrae.common.TITLE
 import com.xevrae.data.db.Converters
-import com.xevrae.data.lastfm.LastfmScrobbler
 import com.xevrae.domain.data.entities.NewFormatEntity
 import com.xevrae.domain.data.entities.SongEntity
 import com.xevrae.domain.data.model.browse.album.Track
@@ -97,7 +96,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.koin.mp.KoinPlatform.getKoin
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.PI
 import kotlin.math.cos
@@ -105,28 +103,22 @@ import kotlin.math.pow
 
 private val TAG = "Media3ServiceHandlerImpl"
 
-internal class MediaServiceHandlerImpl(
+class MediaServiceHandlerImpl(
+    private val context: Context,
     private val dataStoreManager: DataStoreManager,
     private val songRepository: SongRepository,
     private val streamRepository: StreamRepository,
     private val localPlaylistRepository: LocalPlaylistRepository,
     private val analyticsRepository: AnalyticsRepository,
     private val coroutineScope: CoroutineScope,
+    override val player: MediaPlayerInterface,
 ) : MediaPlayerHandler,
     MediaPlayerListener {
     private val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val context: Context = getKoin().get()
-    override val player: MediaPlayerInterface = getKoin().get()
 
     @Volatile
     private var discordRPC: DiscordRPC? = null
 
-    /**
-     * Built here rather than injected: it needs nothing this handler does not already hold, and
-     * threading it through [createMediaServiceHandler] would mean changing that expect signature
-     * and all three actuals for one dependency.
-     */
-    private val lastfmScrobbler = LastfmScrobbler(dataStoreManager)
     override var onUpdateNotification: (List<GenericCommandButton>) -> Unit = {}
     override var showToast: (ToastType) -> Unit = {}
     override var pushPlayerError: (PlayerError) -> Unit = {}
