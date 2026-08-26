@@ -427,6 +427,22 @@ interface DataStoreManager {
 
     suspend fun setAutoBackupLastTime(time: Long)
 
+    val prefer320kbpsStream: Flow<String>
+
+    suspend fun setPrefer320kbpsStream(enabled: Boolean)
+
+    val your320kbpsUrl: Flow<String>
+
+    suspend fun setYour320kbpsUrl(url: String)
+
+    val blurFullscreenLyrics: Flow<String>
+
+    suspend fun setBlurFullscreenLyrics(blur: Boolean)
+
+    val blurPlayerBackground: Flow<String>
+
+    suspend fun setBlurPlayerBackground(blur: Boolean)
+
     enum class ProxyType {
         PROXY_TYPE_HTTP,
         PROXY_TYPE_SOCKS,

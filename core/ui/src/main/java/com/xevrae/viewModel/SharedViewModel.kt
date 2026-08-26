@@ -1184,7 +1184,6 @@ class SharedViewModel @Inject constructor(
                                     track,
                                     duration,
                                     lyrics,
-                                    dataStoreManager.translationLanguage.first(),
                                 ).collect {
                                     when (it) {
                                         is Resource.Error -> {

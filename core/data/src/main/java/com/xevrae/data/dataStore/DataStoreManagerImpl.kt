@@ -1512,10 +1512,54 @@ class DataStoreManagerImpl(
             preferences[AUTO_BACKUP_LAST_TIME] ?: 0L
         }
 
-    override suspend fun setAutoBackupLastTime(time: Long) {
+    override val prefer320kbpsStream: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[PREFER_320KBPS_STREAM] ?: FALSE
+        }
+
+    override suspend fun setPrefer320kbpsStream(enabled: Boolean) {
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
-                settings[AUTO_BACKUP_LAST_TIME] = time
+                settings[PREFER_320KBPS_STREAM] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
+    override val your320kbpsUrl: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[YOUR_320KBPS_URL] ?: ""
+        }
+
+    override suspend fun setYour320kbpsUrl(url: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[YOUR_320KBPS_URL] = url
+            }
+        }
+    }
+
+    override val blurFullscreenLyrics: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[BLUR_FULLSCREEN_LYRICS] ?: TRUE
+        }
+
+    override suspend fun setBlurFullscreenLyrics(blur: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[BLUR_FULLSCREEN_LYRICS] = if (blur) TRUE else FALSE
+            }
+        }
+    }
+
+    override val blurPlayerBackground: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[BLUR_PLAYER_BACKGROUND] ?: TRUE
+        }
+
+    override suspend fun setBlurPlayerBackground(blur: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[BLUR_PLAYER_BACKGROUND] = if (blur) TRUE else FALSE
             }
         }
     }
@@ -1630,5 +1674,10 @@ class DataStoreManagerImpl(
         val AUTO_BACKUP_FREQUENCY = stringPreferencesKey("auto_backup_frequency")
         val AUTO_BACKUP_MAX_FILES = intPreferencesKey("auto_backup_max_files")
         val AUTO_BACKUP_LAST_TIME = longPreferencesKey("auto_backup_last_time")
+
+        val PREFER_320KBPS_STREAM = stringPreferencesKey("prefer_320kbps_stream")
+        val YOUR_320KBPS_URL = stringPreferencesKey("your_320kbps_url")
+        val BLUR_FULLSCREEN_LYRICS = stringPreferencesKey("blur_fullscreen_lyrics")
+        val BLUR_PLAYER_BACKGROUND = stringPreferencesKey("blur_player_background")
     }
 }

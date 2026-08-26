@@ -200,13 +200,14 @@ class HomeViewModel @Inject constructor(
                         getString(Res.string.view_count),
                         getString(Res.string.song),
                     ),
+                    homeRepository.getMoodAndMomentsData(),
                     homeRepository.getChartData(dataStoreManager.chartKey.first()),
                     homeRepository.getNewRelease(
                         getString(Res.string.new_release),
                         getString(Res.string.music_video),
                     ),
-                ) { home, exploreChart, newRelease ->
-                    HomeDataCombine(home, exploreChart, newRelease)
+                ) { home, exploreMood, exploreChart, newRelease ->
+                    HomeDataCombine(home, exploreMood, exploreChart, newRelease)
                 }.collect { result ->
                     val home = result.home
                     Logger.d("home size", "${home.data?.second?.size}")
