@@ -83,6 +83,6 @@ abstract class MusicDatabase : RoomDatabase() {
     abstract fun getDatabaseDao(): DatabaseDao
 
     suspend fun vacuum() {
-        useWriterConnection { it.execSQL("VACUUM") }
+        openHelper.writableDatabase.execSQL("VACUUM")
     }
 }
