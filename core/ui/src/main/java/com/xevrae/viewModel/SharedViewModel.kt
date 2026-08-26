@@ -1264,28 +1264,28 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getXevraeLyrics(
+    private suspend fun getSimpMusicLyrics(
         videoId: String,
         song: SongEntity,
         artist: String?,
         duration: Int,
     ) {
-        lyricsCanvasRepository.getXevraeLyrics(videoId).collectLatest {
-            Logger.w(tag, "Get Xevrae Lyrics for $videoId: $it")
+        lyricsCanvasRepository.getSimpMusicLyrics(videoId).collectLatest {
+            Logger.w(tag, "Get SimpMusic Lyrics for $videoId: $it")
             val data = it.data
             if (it is Resource.Success && data != null) {
-                Logger.d(tag, "Get Xevrae Lyrics Success")
+                Logger.d(tag, "Get SimpMusic Lyrics Success")
                 updateLyrics(
                     videoId,
                     duration,
                     data,
                     false,
-                    LyricsProvider.XEVRAE,
+                    LyricsProvider.SIMPMUSIC,
                 )
                 insertLyrics(
                     data.toLyricsEntity(videoId),
                 )
-                getXevraeTranslatedLyrics(
+                getSimpMusicTranslatedLyrics(
                     videoId,
                     data,
                 )
@@ -1345,7 +1345,7 @@ class SharedViewModel @Inject constructor(
                     }
 
                     else -> {
-                        getXevraeLyrics(
+                        getSimpMusicLyrics(
                             videoId,
                             song,
                             (artist ?: ""),
@@ -1438,7 +1438,7 @@ class SharedViewModel @Inject constructor(
 
                         else -> {
                             log("Get BetterLyrics Error: ${res.message}")
-                            getXevraeLyrics(
+                            getSimpMusicLyrics(
                                 song.videoId,
                                 song,
                                 artist,
@@ -1450,28 +1450,28 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getXevraeTranslatedLyrics(
+    private suspend fun getSimpMusicTranslatedLyrics(
         videoId: String,
         lyrics: Lyrics,
     ) {
         val translationLanguage =
             dataStoreManager.translationLanguage.first()
-        lyricsCanvasRepository.getXevraeTranslatedLyrics(videoId, translationLanguage).collectLatest { response ->
+        lyricsCanvasRepository.getSimpMusicTranslatedLyrics(videoId, translationLanguage).collectLatest { response ->
             val data = response.data
             when (response) {
                 is Resource.Success if (data != null) -> {
-                    Logger.d(tag, "Get Xevrae Translated Lyrics Success")
+                    Logger.d(tag, "Get SimpMusic Translated Lyrics Success")
                     updateLyrics(
                         videoId,
                         0,
                         data,
                         true,
-                        LyricsProvider.XEVRAE,
+                        LyricsProvider.SIMPMUSIC,
                     )
                 }
 
                 else -> {
-                    Logger.w(tag, "Get Xevrae Translated Lyrics Error: ${response.message}")
+                    Logger.w(tag, "Get SimpMusic Translated Lyrics Error: ${response.message}")
                     getAITranslationLyrics(
                         videoId,
                         lyrics,
@@ -1740,16 +1740,16 @@ class SharedViewModel @Inject constructor(
     val lyricsVoteState: StateFlow<VoteData?> = _lyricsVoteState.asStateFlow()
 
     /**
-     * Vote for Xevrae original lyrics (upvote or downvote)
+     * Vote for SimpMusic original lyrics (upvote or downvote)
      * @param upvote true for upvote, false for downvote
      */
     fun voteLyrics(upvote: Boolean) {
         val lyricsData = _nowPlayingScreenData.value.lyricsData
         val lyricsProvider = lyricsData?.lyricsProvider
-        val xevraeLyricsId = lyricsData?.lyrics?.xevraeLyrics?.id ?: return
+        val simpMusicLyricsId = lyricsData?.lyrics?.simpMusicLyrics?.id ?: return
 
-        if (lyricsProvider != LyricsProvider.XEVRAE || xevraeLyricsId.isEmpty()) {
-            Logger.w(tag, "Cannot vote: not a Xevrae lyrics or missing ID")
+        if ((lyricsProvider != LyricsProvider.SIMPMUSIC && lyricsProvider != LyricsProvider.XEVRAE) || simpMusicLyricsId.isEmpty()) {
+            Logger.w(tag, "Cannot vote: not a SimpMusic lyrics or missing ID")
             return
         }
 
@@ -1760,13 +1760,13 @@ class SharedViewModel @Inject constructor(
                 )
             }
             lyricsCanvasRepository
-                .voteXevraeLyrics(
-                    lyricsId = xevraeLyricsId,
+                .voteSimpMusicLyrics(
+                    lyricsId = simpMusicLyricsId,
                     upvote = upvote,
                 ).collectLatest { result ->
                     when (result) {
                         is Resource.Error -> {
-                            Logger.w(tag, "Vote Xevrae Lyrics Error ${result.message}")
+                            Logger.w(tag, "Vote SimpMusic Lyrics Error ${result.message}")
                             _lyricsVoteState.update {
                                 it?.copy(
                                     state = VoteState.Error(result.message ?: "Unknown error"),
@@ -1775,7 +1775,7 @@ class SharedViewModel @Inject constructor(
                         }
 
                         is Resource.Success -> {
-                            Logger.d(tag, "Vote Xevrae Lyrics Success")
+                            Logger.d(tag, "Vote SimpMusic Lyrics Success")
                             _lyricsVoteState.update {
                                 it?.copy(
                                     state = VoteState.Success(upvote),
@@ -1795,16 +1795,16 @@ class SharedViewModel @Inject constructor(
     }
 
     /**
-     * Vote for Xevrae translated lyrics (upvote or downvote)
+     * Vote for SimpMusic translated lyrics (upvote or downvote)
      * @param upvote true for upvote, false for downvote
      */
     fun voteTranslatedLyrics(upvote: Boolean) {
         val translatedLyrics = _nowPlayingScreenData.value.lyricsData?.translatedLyrics
         val lyricsProvider = translatedLyrics?.second
-        val xevraeLyricsId = translatedLyrics?.first?.xevraeLyrics?.id ?: return
+        val simpMusicLyricsId = translatedLyrics?.first?.simpMusicLyrics?.id ?: return
 
-        if (lyricsProvider != LyricsProvider.XEVRAE || xevraeLyricsId.isEmpty()) {
-            Logger.w(tag, "Cannot vote: not a Xevrae translated lyrics or missing ID")
+        if ((lyricsProvider != LyricsProvider.SIMPMUSIC && lyricsProvider != LyricsProvider.XEVRAE) || simpMusicLyricsId.isEmpty()) {
+            Logger.w(tag, "Cannot vote: not a SimpMusic translated lyrics or missing ID")
             return
         }
 
@@ -1815,13 +1815,13 @@ class SharedViewModel @Inject constructor(
                 )
             }
             lyricsCanvasRepository
-                .voteXevraeTranslatedLyrics(
-                    translatedLyricsId = xevraeLyricsId,
+                .voteSimpMusicTranslatedLyrics(
+                    translatedLyricsId = simpMusicLyricsId,
                     upvote = upvote,
                 ).collectLatest { result ->
                     when (result) {
                         is Resource.Error -> {
-                            Logger.w(tag, "Vote Xevrae Translated Lyrics Error ${result.message}")
+                            Logger.w(tag, "Vote SimpMusic Translated Lyrics Error ${result.message}")
                             _translatedVoteState.update {
                                 it?.copy(
                                     state = VoteState.Error(result.message ?: "Unknown error"),
@@ -1830,7 +1830,7 @@ class SharedViewModel @Inject constructor(
                         }
 
                         is Resource.Success -> {
-                            Logger.d(tag, "Vote Xevrae Translated Lyrics Success")
+                            Logger.d(tag, "Vote SimpMusic Translated Lyrics Success")
                             _translatedVoteState.update {
                                 it?.copy(
                                     state = VoteState.Success(upvote),
@@ -1882,6 +1882,7 @@ sealed class UIEvent {
 }
 
 enum class LyricsProvider {
+    SIMPMUSIC,
     XEVRAE,
     YOUTUBE,
     SPOTIFY,
