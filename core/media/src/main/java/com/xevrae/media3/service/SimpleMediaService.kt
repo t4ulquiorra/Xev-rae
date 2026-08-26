@@ -32,34 +32,42 @@ import com.xevrae.logger.Logger
 import com.xevrae.android.media.R
 import com.xevrae.media3.extension.toCommandButton
 import com.xevrae.media3.utils.CoilBitmapLoader
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.qualifier.named
+import javax.inject.Inject
+import javax.inject.Named
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
 @UnstableApi
-internal class SimpleMediaService :
-    MediaLibraryService(),
-    KoinComponent {
-    private val coroutineScope by inject<CoroutineScope>(named(com.xevrae.common.Config.SERVICE_SCOPE))
-    // Session-level player from DI: the ForwardingPlayer wrapped with Cast support in the
-    // full build (plain ForwardingPlayer in the FOSS build).
-    private val player: Player by inject<Player>(qualifier = named(com.xevrae.common.Config.MAIN_PLAYER))
-    private val coilBitmapLoader: CoilBitmapLoader by inject<CoilBitmapLoader>()
+@AndroidEntryPoint
+class SimpleMediaService : MediaLibraryService() {
+    @Inject
+    @Named(com.xevrae.common.Config.SERVICE_SCOPE)
+    lateinit var coroutineScope: CoroutineScope
+
+    @Inject
+    @Named(com.xevrae.common.Config.MAIN_PLAYER)
+    lateinit var player: Player
+
+    @Inject
+    lateinit var coilBitmapLoader: CoilBitmapLoader
 
     private var mediaSession: MediaLibrarySession? = null
 
-    private val simpleMediaSessionCallback: MediaLibrarySession.Callback by inject<MediaLibrarySession.Callback>()
+    @Inject
+    lateinit var simpleMediaSessionCallback: MediaLibrarySession.Callback
 
-    private val simpleMediaServiceHandler: MediaPlayerHandler by inject<MediaPlayerHandler>()
-    private val dataStoreManager: DataStoreManager by inject<DataStoreManager>()
+    @Inject
+    lateinit var simpleMediaServiceHandler: MediaPlayerHandler
+
+    @Inject
+    lateinit var dataStoreManager: DataStoreManager
 
     private val binder = MusicBinder()
 

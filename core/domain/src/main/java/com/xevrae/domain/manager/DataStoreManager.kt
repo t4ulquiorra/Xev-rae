@@ -34,10 +34,20 @@ interface DataStoreManager {
 
     val language: Flow<String>
 
+    /**
+     * Serialized "Moods & Genres" browse result, so the search and home screens can paint their
+     * category grid immediately instead of waiting on the network every time. Null until the
+     * first successful fetch.
+     */
     val moodAndGenresCache: Flow<String?>
 
     suspend fun setMoodAndGenresCache(json: String)
 
+    /**
+     * Cover art resolved per browse category, keyed by its params. The category list itself
+     * carries no artwork, so each cover costs one full category browse — worth remembering on
+     * disk rather than paying again every time the search screen opens.
+     */
     val moodArtworkCache: Flow<String?>
 
     suspend fun setMoodArtworkCache(json: String)
@@ -128,6 +138,16 @@ interface DataStoreManager {
 
     suspend fun setWatchVideoInsteadOfPlayingAudio(watch: Boolean)
 
+    /**
+     * Whether a radio queue should carry audio only, dropping the video entries YouTube mixes in.
+     *
+     * Scoped to radios on purpose — it is not a global "hide every video" switch, so a playlist or
+     * an album the user picked themselves still plays exactly what it contains.
+     */
+    val radioAudioOnly: Flow<String>
+
+    suspend fun setRadioAudioOnly(audioOnly: Boolean)
+
     val playerVolume: Flow<Float>
 
     suspend fun setPlayerVolume(volume: Float)
@@ -155,6 +175,14 @@ interface DataStoreManager {
     val spotifyClientTokenExpires: Flow<Long>
 
     suspend fun setSpotifyClientTokenExpires(expires: Long)
+
+    val tidalClientId: Flow<String>
+
+    suspend fun setTidalClientId(value: String)
+
+    val tidalClientSecret: Flow<String>
+
+    suspend fun setTidalClientSecret(value: String)
 
     val spotifyPersonalToken: Flow<String>
 
@@ -226,14 +254,6 @@ interface DataStoreManager {
 
     suspend fun setUpdateChannel(channel: String)
 
-    val blurFullscreenLyrics: Flow<String>
-
-    suspend fun setBlurFullscreenLyrics(blur: Boolean)
-
-    val blurPlayerBackground: Flow<String>
-
-    suspend fun setBlurPlayerBackground(blur: Boolean)
-
     val playbackSpeed: Flow<Float>
 
     fun setPlaybackSpeed(speed: Float)
@@ -298,13 +318,26 @@ interface DataStoreManager {
 
     suspend fun setCrossfadeDjMode(enabled: Boolean)
 
-    val prefer320kbpsStream: Flow<String>
+    /**
+     * When on, transitions *between tracks of the same album* skip the crossfade, so an album that
+     * was sequenced to run continuously keeps doing so. Edges still crossfade: the last album track
+     * into whatever follows it fades normally. Off by default — it changes how crossfade behaves
+     * for anyone already using it.
+     */
+    val crossfadeSkipAlbum: Flow<String>
 
-    suspend fun setPrefer320kbpsStream(enabled: Boolean)
+    suspend fun setCrossfadeSkipAlbum(enabled: Boolean)
 
-    val your320kbpsUrl: Flow<String>
+    /**
+     * When on, liking a song also queues it for offline download, at the existing download quality.
+     *
+     * Off by default — it spends storage and data without the user asking each time. Only applies
+     * from the moment it is switched on: songs liked earlier are left alone, and unliking never
+     * removes a download that already exists.
+     */
+    val autoDownloadLikedSongs: Flow<String>
 
-    suspend fun setYour320kbpsUrl(url: String)
+    suspend fun setAutoDownloadLikedSongs(enabled: Boolean)
 
     val youtubeSubtitleLanguage: Flow<String>
 
@@ -327,6 +360,21 @@ interface DataStoreManager {
 
     suspend fun setEnableLiquidGlass(enable: Boolean)
 
+    /** One of [THEME_MODE_SYSTEM], [THEME_MODE_DARK], [THEME_MODE_LIGHT]. */
+    val themeMode: Flow<String>
+
+    suspend fun setThemeMode(mode: String)
+
+    /** One of [THEME_COLOR_DEFAULT], [THEME_COLOR_WALLPAPER], [THEME_COLOR_CUSTOM]. */
+    val themeColorSource: Flow<String>
+
+    suspend fun setThemeColorSource(source: String)
+
+    /** Seed color for the custom theme as an 8-digit ARGB hex string (e.g. "FF8ECAE6"). */
+    val customThemeColor: Flow<String>
+
+    suspend fun setCustomThemeColor(argbHex: String)
+
     val explicitContentEnabled: Flow<String>
 
     suspend fun setExplicitContentEnabled(enabled: Boolean)
@@ -339,9 +387,28 @@ interface DataStoreManager {
 
     suspend fun setRichPresenceEnabled(enabled: Boolean)
 
+    /** Last.fm session key. Has no expiry — it stays valid until the user revokes it on last.fm. */
+    val lastfmSessionKey: Flow<String>
+
+    /** The logged-in Last.fm username, kept only so settings can show whose account is connected. */
+    val lastfmUsername: Flow<String>
+
+    suspend fun setLastfmSession(
+        sessionKey: String,
+        username: String,
+    )
+
+    val lastfmScrobbleEnabled: Flow<String>
+
+    suspend fun setLastfmScrobbleEnabled(enabled: Boolean)
+
     val localTrackingEnabled: Flow<String>
 
     suspend fun setLocalTrackingEnabled(enabled: Boolean)
+
+    val blogNotificationEnabled: Flow<String>
+
+    suspend fun setBlogNotificationEnabled(enabled: Boolean)
 
     // Auto Backup
     val autoBackupEnabled: Flow<String>
@@ -366,7 +433,7 @@ interface DataStoreManager {
     }
 
     companion object Values {
-        const val XEVRAE = "xevrae"
+        const val SIMPMUSIC = "simpmusic"
         const val YOUTUBE = "youtube"
         const val LRCLIB = "lrclib"
         const val BETTER_LYRICS = "better_lyrics"
@@ -381,6 +448,16 @@ interface DataStoreManager {
 
         const val TRUE = "TRUE"
         const val FALSE = "FALSE"
+
+        const val THEME_MODE_SYSTEM = "SYSTEM"
+        const val THEME_MODE_DARK = "DARK"
+        const val THEME_MODE_LIGHT = "LIGHT"
+
+        const val THEME_COLOR_DEFAULT = "DEFAULT"
+        const val THEME_COLOR_WALLPAPER = "WALLPAPER"
+        const val THEME_COLOR_CUSTOM = "CUSTOM"
+
+        const val DEFAULT_THEME_COLOR_HEX = "FF8ECAE6"
 
         const val CROSSFADE_DURATION_AUTO = 0
 

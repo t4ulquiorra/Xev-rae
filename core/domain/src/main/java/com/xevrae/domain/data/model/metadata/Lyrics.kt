@@ -7,11 +7,11 @@ data class Lyrics(
     val error: Boolean = false,
     val lines: List<Line>?,
     val syncType: String?,
-    val xevraeLyrics: XevraeLyrics? = null,
+    val simpMusicLyrics: SimpMusicLyrics? = null,
 )
 
 @Serializable
-data class XevraeLyrics(
+data class SimpMusicLyrics(
     val id: String,
     val vote: Int,
 )

@@ -1,6 +1,6 @@
 package com.xevrae.domain.data.model.intent
 
-import android.net.Uri
+import com.eygraber.uri.Uri
 
 data class GenericIntent(
     val action: String? = null,

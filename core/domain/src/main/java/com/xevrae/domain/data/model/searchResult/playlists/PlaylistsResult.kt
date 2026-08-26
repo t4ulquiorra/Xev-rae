@@ -3,6 +3,7 @@ package com.xevrae.domain.data.model.searchResult.playlists
 import com.xevrae.domain.data.model.searchResult.songs.Thumbnail
 import com.xevrae.domain.data.type.PlaylistType
 import com.xevrae.domain.data.type.SearchResultType
+import com.xevrae.domain.utils.isRadioPlaylistId
 
 data class PlaylistsResult(
     val author: String,
@@ -17,7 +18,7 @@ data class PlaylistsResult(
     override fun playlistType(): PlaylistType.Type =
         if (resultType == "Podcast") {
             PlaylistType.Type.PODCAST
-        } else if (browseId.startsWith("RDEM") || browseId.startsWith("RDAMVM") || browseId.startsWith("RDAT")) {
+        } else if (browseId.isRadioPlaylistId()) {
             PlaylistType.Type.RADIO
         } else {
             PlaylistType.Type.YOUTUBE_PLAYLIST

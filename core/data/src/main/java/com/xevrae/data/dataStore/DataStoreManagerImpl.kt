@@ -21,7 +21,7 @@ import com.xevrae.domain.manager.DataStoreManager.Values.PROXY_TYPE_SOCKS
 import com.xevrae.domain.manager.DataStoreManager.Values.REPEAT_ALL
 import com.xevrae.domain.manager.DataStoreManager.Values.REPEAT_MODE_OFF
 import com.xevrae.domain.manager.DataStoreManager.Values.REPEAT_ONE
-import com.xevrae.domain.manager.DataStoreManager.Values.XEVRAE
+import com.xevrae.domain.manager.DataStoreManager.Values.SIMPMUSIC
 import com.xevrae.domain.manager.DataStoreManager.Values.TRUE
 import com.xevrae.logger.Logger
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import com.xevrae.common.QUALITY as COMMON_QUALITY
 
-class DataStoreManagerImpl(
+internal class DataStoreManagerImpl(
     private val settingsDataStore: DataStore<Preferences>,
 ) : DataStoreManager {
     override val appVersion: Flow<String> =
@@ -445,7 +445,7 @@ class DataStoreManagerImpl(
 
     override val lyricsProvider =
         settingsDataStore.data.map { preferences ->
-            preferences[LYRICS_PROVIDER] ?: XEVRAE
+            preferences[LYRICS_PROVIDER] ?: SIMPMUSIC
         }
 
     override suspend fun setLyricsProvider(provider: String) {
@@ -503,6 +503,19 @@ class DataStoreManagerImpl(
                 settingsDataStore.edit { settings ->
                     settings[WATCH_VIDEO_INSTEAD_OF_PLAYING_AUDIO] = FALSE
                 }
+            }
+        }
+    }
+
+    override val radioAudioOnly =
+        settingsDataStore.data.map { preferences ->
+            preferences[RADIO_AUDIO_ONLY] ?: FALSE
+        }
+
+    override suspend fun setRadioAudioOnly(audioOnly: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[RADIO_AUDIO_ONLY] = if (audioOnly) TRUE else FALSE
             }
         }
     }
@@ -610,6 +623,35 @@ class DataStoreManagerImpl(
         }
     }
 
+    // Fallback "" (blank) on purpose: credentials are not hard-coded in source — they come
+    // only from the remote config. CommonRepositoryImpl pushes a value into YouTube only when
+    // non-blank, so an empty cache simply leaves TIDAL disabled until the first fetch.
+    override val tidalClientId: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[TIDAL_CLIENT_ID] ?: ""
+        }
+
+    override suspend fun setTidalClientId(value: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[TIDAL_CLIENT_ID] = value
+            }
+        }
+    }
+
+    override val tidalClientSecret: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[TIDAL_CLIENT_SECRET] ?: ""
+        }
+
+    override suspend fun setTidalClientSecret(value: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[TIDAL_CLIENT_SECRET] = value
+            }
+        }
+    }
+
     override val spotifyPersonalToken: Flow<String> =
         settingsDataStore.data.map { preferences ->
             preferences[SPOTIFY_PERSONAL_TOKEN] ?: ""
@@ -677,6 +719,45 @@ class DataStoreManagerImpl(
                 settingsDataStore.edit { settings ->
                     settings[TRANSLUCENT_BOTTOM_BAR] = FALSE
                 }
+            }
+        }
+    }
+
+    override val themeMode =
+        settingsDataStore.data.map { preferences ->
+            preferences[THEME_MODE] ?: DataStoreManager.THEME_MODE_DARK
+        }
+
+    override suspend fun setThemeMode(mode: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[THEME_MODE] = mode
+            }
+        }
+    }
+
+    override val themeColorSource =
+        settingsDataStore.data.map { preferences ->
+            preferences[THEME_COLOR_SOURCE] ?: DataStoreManager.THEME_COLOR_DEFAULT
+        }
+
+    override suspend fun setThemeColorSource(source: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[THEME_COLOR_SOURCE] = source
+            }
+        }
+    }
+
+    override val customThemeColor =
+        settingsDataStore.data.map { preferences ->
+            preferences[CUSTOM_THEME_COLOR] ?: DataStoreManager.DEFAULT_THEME_COLOR_HEX
+        }
+
+    override suspend fun setCustomThemeColor(argbHex: String) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[CUSTOM_THEME_COLOR] = argbHex
             }
         }
     }
@@ -905,44 +986,6 @@ class DataStoreManagerImpl(
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
                 settings[UPDATE_CHANNEL] = channel
-            }
-        }
-    }
-
-    override val blurFullscreenLyrics =
-        settingsDataStore.data.map { preferences ->
-            preferences[BLUR_FULLSCREEN_LYRICS] ?: FALSE
-        }
-
-    override suspend fun setBlurFullscreenLyrics(blur: Boolean) {
-        withContext(Dispatchers.IO) {
-            if (blur) {
-                settingsDataStore.edit { settings ->
-                    settings[BLUR_FULLSCREEN_LYRICS] = TRUE
-                }
-            } else {
-                settingsDataStore.edit { settings ->
-                    settings[BLUR_FULLSCREEN_LYRICS] = FALSE
-                }
-            }
-        }
-    }
-
-    override val blurPlayerBackground =
-        settingsDataStore.data.map { preferences ->
-            preferences[BLUR_PLAYER_BACKGROUND] ?: FALSE
-        }
-
-    override suspend fun setBlurPlayerBackground(blur: Boolean) {
-        withContext(Dispatchers.IO) {
-            if (blur) {
-                settingsDataStore.edit { settings ->
-                    settings[BLUR_PLAYER_BACKGROUND] = TRUE
-                }
-            } else {
-                settingsDataStore.edit { settings ->
-                    settings[BLUR_PLAYER_BACKGROUND] = FALSE
-                }
             }
         }
     }
@@ -1179,28 +1222,31 @@ class DataStoreManagerImpl(
         }
     }
 
-    override val prefer320kbpsStream: Flow<String> =
+    // Defaults to FALSE: anyone already running crossfade would otherwise find it silently absent
+    // on albums after updating.
+    override val crossfadeSkipAlbum: Flow<String> =
         settingsDataStore.data.map { preferences ->
-            preferences[PREFER_320KBPS_STREAM] ?: FALSE
+            preferences[CROSSFADE_SKIP_ALBUM] ?: FALSE
         }
 
-    override suspend fun setPrefer320kbpsStream(enabled: Boolean) {
+    override suspend fun setCrossfadeSkipAlbum(enabled: Boolean) {
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
-                settings[PREFER_320KBPS_STREAM] = if (enabled) TRUE else FALSE
+                settings[CROSSFADE_SKIP_ALBUM] = if (enabled) TRUE else FALSE
             }
         }
     }
 
-    override val your320kbpsUrl: Flow<String> =
+    // Defaults to FALSE: it spends storage and mobile data on the user's behalf.
+    override val autoDownloadLikedSongs: Flow<String> =
         settingsDataStore.data.map { preferences ->
-            preferences[YOUR_320KBPS_URL] ?: "https://api.monochrome.tf"
+            preferences[AUTO_DOWNLOAD_LIKED_SONGS] ?: FALSE
         }
 
-    override suspend fun setYour320kbpsUrl(url: String) {
+    override suspend fun setAutoDownloadLikedSongs(enabled: Boolean) {
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
-                settings[YOUR_320KBPS_URL] = url
+                settings[AUTO_DOWNLOAD_LIKED_SONGS] = if (enabled) TRUE else FALSE
             }
         }
     }
@@ -1353,6 +1399,48 @@ class DataStoreManagerImpl(
         }
     }
 
+    override val lastfmSessionKey: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[LASTFM_SESSION_KEY] ?: ""
+        }
+
+    override val lastfmUsername: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[LASTFM_USERNAME] ?: ""
+        }
+
+    /**
+     * Key and username are written together, and an empty key clears both.
+     *
+     * They only mean anything as a pair: a username with no key cannot scrobble, and a key with no
+     * username leaves settings unable to say whose account is connected. One edit also means
+     * logging out cannot leave half the pair behind if the process dies mid-way.
+     */
+    override suspend fun setLastfmSession(
+        sessionKey: String,
+        username: String,
+    ) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[LASTFM_SESSION_KEY] = sessionKey
+                settings[LASTFM_USERNAME] = if (sessionKey.isEmpty()) "" else username
+            }
+        }
+    }
+
+    override val lastfmScrobbleEnabled: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[LASTFM_SCROBBLE_ENABLED] ?: TRUE
+        }
+
+    override suspend fun setLastfmScrobbleEnabled(enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[LASTFM_SCROBBLE_ENABLED] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
     override val localTrackingEnabled: Flow<String> =
         settingsDataStore.data.map { preferences ->
             preferences[LOCAL_TRACKING_ENABLED] ?: FALSE
@@ -1362,6 +1450,19 @@ class DataStoreManagerImpl(
         withContext(Dispatchers.IO) {
             settingsDataStore.edit { settings ->
                 settings[LOCAL_TRACKING_ENABLED] = if (enabled) TRUE else FALSE
+            }
+        }
+    }
+
+    override val blogNotificationEnabled: Flow<String> =
+        settingsDataStore.data.map { preferences ->
+            preferences[BLOG_NOTIFICATION_ENABLED] ?: TRUE
+        }
+
+    override suspend fun setBlogNotificationEnabled(enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            settingsDataStore.edit { settings ->
+                settings[BLOG_NOTIFICATION_ENABLED] = if (enabled) TRUE else FALSE
             }
         }
     }
@@ -1426,6 +1527,8 @@ class DataStoreManagerImpl(
         val PAGE_ID = stringPreferencesKey("page_id")
         val LOGGED_IN = stringPreferencesKey("logged_in")
         val LOCATION = stringPreferencesKey("location")
+        val MOOD_AND_GENRES_CACHE = stringPreferencesKey("mood_and_genres_cache")
+        val MOOD_ARTWORK_CACHE = stringPreferencesKey("mood_artwork_cache")
         val QUALITY = stringPreferencesKey("quality")
         val DOWNLOAD_QUALITY = stringPreferencesKey("download_quality")
         val VIDEO_DOWNLOAD_QUALITY = stringPreferencesKey("video_download_quality")
@@ -1445,8 +1548,8 @@ class DataStoreManagerImpl(
         val CROSSFADE_ENABLED = stringPreferencesKey("crossfade_enabled")
         val CROSSFADE_DURATION = intPreferencesKey("crossfade_duration")
         val CROSSFADE_DJ_MODE = stringPreferencesKey("crossfade_dj_mode")
-        val PREFER_320KBPS_STREAM = stringPreferencesKey("prefer_320kbps_stream")
-        val YOUR_320KBPS_URL = stringPreferencesKey("your_320kbps_url")
+        val CROSSFADE_SKIP_ALBUM = stringPreferencesKey("crossfade_skip_album")
+        val AUTO_DOWNLOAD_LIKED_SONGS = stringPreferencesKey("auto_download_liked_songs")
         val LYRICS_PROVIDER = stringPreferencesKey("lyrics_provider")
         val TRANSLATION_LANGUAGE = stringPreferencesKey("translation_language")
         val USE_TRANSLATION_LANGUAGE = stringPreferencesKey("use_translation_language")
@@ -1455,6 +1558,7 @@ class DataStoreManagerImpl(
         val MAX_SONG_CACHE_SIZE = intPreferencesKey("maxSongCacheSize")
         val WATCH_VIDEO_INSTEAD_OF_PLAYING_AUDIO =
             stringPreferencesKey("watch_video_instead_of_playing_audio")
+        val RADIO_AUDIO_ONLY = stringPreferencesKey("radio_audio_only")
         val VIDEO_QUALITY = stringPreferencesKey("video_quality")
         val PLAYER_VOLUME = floatPreferencesKey("player_volume")
         val SPDC = stringPreferencesKey("sp_dc")
@@ -1464,9 +1568,14 @@ class DataStoreManagerImpl(
         val SPOTIFY_CLIENT_TOKEN_EXPIRES = longPreferencesKey("spotify_client_token_expires")
         val SPOTIFY_PERSONAL_TOKEN = stringPreferencesKey("spotify_personal_token")
         val SPOTIFY_PERSONAL_TOKEN_EXPIRES = longPreferencesKey("spotify_personal_token_expires")
+        val TIDAL_CLIENT_ID = stringPreferencesKey("tidal_client_id")
+        val TIDAL_CLIENT_SECRET = stringPreferencesKey("tidal_client_secret")
         val HOME_LIMIT = intPreferencesKey("home_limit")
         val CHART_KEY = stringPreferencesKey("chart_key")
         val TRANSLUCENT_BOTTOM_BAR = stringPreferencesKey("translucent_bottom_bar")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val THEME_COLOR_SOURCE = stringPreferencesKey("theme_color_source")
+        val CUSTOM_THEME_COLOR = stringPreferencesKey("custom_theme_color")
         val USING_PROXY = stringPreferencesKey("using_proxy")
         val PROXY_TYPE = stringPreferencesKey("proxy_type")
         val PROXY_HOST = stringPreferencesKey("proxy_host")
@@ -1479,8 +1588,6 @@ class DataStoreManagerImpl(
         val SHOULD_SHOW_LOG_IN_REQUIRED_ALERT = stringPreferencesKey("should_show_log_in_required_alert")
         val AUTO_CHECK_FOR_UPDATES = stringPreferencesKey("auto_check_for_updates")
         val UPDATE_CHANNEL = stringPreferencesKey("update_channel")
-        val BLUR_FULLSCREEN_LYRICS = stringPreferencesKey("blur_fullscreen_lyrics")
-        val BLUR_PLAYER_BACKGROUND = stringPreferencesKey("blur_player_background")
         val PLAYBACK_SPEED = floatPreferencesKey("playback_speed")
         val PITCH = intPreferencesKey("pitch")
         val OPEN_APP_TIME = intPreferencesKey("open_app_time")
@@ -1510,15 +1617,20 @@ class DataStoreManagerImpl(
         val DISCORD_TOKEN = stringPreferencesKey("discord_token")
         val RICH_PRESENCE = stringPreferencesKey("rich_presence")
 
+        val LASTFM_SESSION_KEY = stringPreferencesKey("lastfm_session_key")
+        val LASTFM_USERNAME = stringPreferencesKey("lastfm_username")
+        val LASTFM_SCROBBLE_ENABLED = stringPreferencesKey("lastfm_scrobble_enabled")
+
         val LOCAL_TRACKING_ENABLED = stringPreferencesKey("local_tracking_enabled")
+
+        val BLOG_NOTIFICATION_ENABLED = stringPreferencesKey("blog_notification_enabled")
 
         // Auto Backup
         val AUTO_BACKUP_ENABLED = stringPreferencesKey("auto_backup_enabled")
         val AUTO_BACKUP_FREQUENCY = stringPreferencesKey("auto_backup_frequency")
         val AUTO_BACKUP_MAX_FILES = intPreferencesKey("auto_backup_max_files")
         val AUTO_BACKUP_LAST_TIME = longPreferencesKey("auto_backup_last_time")
-
-        val MOOD_AND_GENRES_CACHE = stringPreferencesKey("mood_and_genres_cache")
-        val MOOD_ARTWORK_CACHE = stringPreferencesKey("mood_artwork_cache")
     }
 }
+
+expect fun createDataStoreInstance(): DataStore<Preferences>

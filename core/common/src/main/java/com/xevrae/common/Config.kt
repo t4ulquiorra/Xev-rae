@@ -166,11 +166,11 @@ object SUPPORTED_LANGUAGE {
             "Português",
             "Français",
             "Español",
-            "简体中文",
+            "简体中文 (Simplified Chinese)",
             "Bahasa Indonesia",
             "اللغة العربية",
             "日本語",
-            "繁體中文",
+            "繁體中文 (Traditional Chinese)",
             "Українська",
             "עברית",
             "Azerbaijani",
@@ -213,12 +213,19 @@ object SUPPORTED_LANGUAGE {
         )
 
     fun getLanguageFromCode(code: String?): String {
-        val index = codes.indexOf(code)
-        Logger.d("Config", "getLanguageFromCode: $index")
+        val index =
+            codes.indexOf(
+                if (code == "he-IL") {
+                    "iw-IL"
+                } else {
+                    code
+                },
+            )
+        Logger.d("Config", "getLanguageFromCode: $code")
+        Logger.w("Config", "getLanguageFromCode: ${items.getOrNull(index)}")
         if (index == -1) {
             return "English"
         }
-        Logger.w("Config", "getLanguageFromCode: ${items.get(index)}")
         return (items.getOrNull(index) ?: "English").toString()
     }
 
@@ -234,14 +241,8 @@ object SUPPORTED_LANGUAGE {
 }
 
 object QUALITY {
-    val items: Array<CharSequence> = arrayOf(
-        "Low - 66kps",
-        "Medium - 129kps",
-        "Saavn (320kbps)",
-        "Qobuz (Lossless)"
-    )
-    val itags: Array<Int> = arrayOf(250, 251, 0, 0)
-    // index 0,1 = YouTube itags; index 2 = Saavn 320kbps; index 3 = Qobuz Lossless
+    val items: Array<CharSequence> = arrayOf("Low - 66kps", "Medium - 129kps", "High - 256kps (YT Premium)")
+    val itags: Array<Int> = arrayOf(250, 251, 774)
 }
 
 object VIDEO_QUALITY {
@@ -386,6 +387,7 @@ object CHART_SUPPORTED_COUNTRY {
             "DE",
             "GT",
             "HN",
+            "HK",
             "HU",
             "IS",
             "IN",
@@ -396,6 +398,7 @@ object CHART_SUPPORTED_COUNTRY {
             "JP",
             "KE",
             "LU",
+            "MY",
             "MX",
             "NL",
             "NZ",
@@ -405,24 +408,29 @@ object CHART_SUPPORTED_COUNTRY {
             "PA",
             "PY",
             "PE",
+            "PH",
             "PL",
             "PT",
             "RO",
             "RU",
             "SA",
             "RS",
+            "SG",
             "ZA",
             "KR",
             "ES",
             "SE",
             "CH",
+            "TW",
             "TZ",
+            "TH",
             "TR",
             "UG",
             "UA",
             "AE",
             "GB",
             "UY",
+            "VN",
             "ZW",
         )
     val itemsData =
@@ -451,6 +459,7 @@ object CHART_SUPPORTED_COUNTRY {
             "Germany",
             "Guatemala",
             "Honduras",
+            "Hong Kong",
             "Hungary",
             "Iceland",
             "India",
@@ -461,6 +470,7 @@ object CHART_SUPPORTED_COUNTRY {
             "Japan",
             "Kenya",
             "Luxembourg",
+            "Malaysia",
             "Mexico",
             "Netherlands",
             "New Zealand",
@@ -470,24 +480,29 @@ object CHART_SUPPORTED_COUNTRY {
             "Panama",
             "Paraguay",
             "Peru",
+            "Philippines",
             "Poland",
             "Portugal",
             "Romania",
             "Russia",
             "Saudi Arabia",
             "Serbia",
+            "Singapore",
             "South Africa",
             "South Korea",
             "Spain",
             "Sweden",
             "Switzerland",
+            "Taiwan",
             "Tanzania",
+            "Thailand",
             "Turkey",
             "Uganda",
             "Ukraine",
             "United Arab Emirates",
             "United Kingdom",
             "Uruguay",
+            "Vietnam",
             "Zimbabwe",
         )
 }
@@ -497,12 +512,16 @@ object MEDIA_CUSTOM_COMMAND {
     const val REPEAT = "repeat"
     const val RADIO = "radio"
     const val SHUFFLE = "shuffle"
+
+    // Android Auto (Car App Library): asks the session for its platform token
+    const val GET_PLATFORM_TOKEN = "get_platform_token"
+    const val KEY_PLATFORM_TOKEN = "platform_token"
 }
 
 object MEDIA_NOTIFICATION {
     const val NOTIFICATION_ID = 200
-    const val NOTIFICATION_CHANNEL_NAME = "Xevrae Playback Notification"
-    const val NOTIFICATION_CHANNEL_ID = "Xevrae Playback Notification ID"
+    const val NOTIFICATION_CHANNEL_NAME = "SimpMusic Playback Notification"
+    const val NOTIFICATION_CHANNEL_ID = "SimpMusic Playback Notification ID"
 }
 
 const val SETTINGS_FILENAME = "settings"

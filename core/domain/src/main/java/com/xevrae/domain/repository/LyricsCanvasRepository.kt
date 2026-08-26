@@ -3,6 +3,7 @@ package com.xevrae.domain.repository
 import com.xevrae.domain.data.entities.LyricsEntity
 import com.xevrae.domain.data.entities.TranslatedLyricsEntity
 import com.xevrae.domain.data.model.browse.album.Track
+import com.xevrae.domain.data.model.browse.artist.ArtistLogo
 import com.xevrae.domain.data.model.canvas.CanvasResult
 import com.xevrae.domain.data.model.metadata.Lyrics
 import com.xevrae.domain.manager.DataStoreManager
@@ -65,36 +66,39 @@ interface LyricsCanvasRepository {
         duration: Int?,
     ): Flow<Resource<Lyrics>>
 
+    /** Fetch the artist's name-logo image + dominant color from the hidden catalog. */
+    fun getArtistLogo(artistName: String): Flow<Resource<ArtistLogo>>
+
     fun getAITranslationLyrics(
         lyrics: Lyrics,
         targetLanguage: String,
     ): Flow<Resource<Lyrics>>
 
-    fun getXevraeLyrics(videoId: String): Flow<Resource<Lyrics>>
+    fun getSimpMusicLyrics(videoId: String): Flow<Resource<Lyrics>>
 
-    fun getXevraeTranslatedLyrics(
+    fun getSimpMusicTranslatedLyrics(
         videoId: String,
         language: String,
     ): Flow<Resource<Lyrics>>
 
-    fun voteXevraeLyrics(
+    fun voteSimpMusicLyrics(
         lyricsId: String,
         upvote: Boolean,
     ): Flow<Resource<String>>
 
-    fun voteXevraeTranslatedLyrics(
+    fun voteSimpMusicTranslatedLyrics(
         translatedLyricsId: String,
         upvote: Boolean,
     ): Flow<Resource<String>>
 
-    fun insertXevraeLyrics(
+    fun insertSimpMusicLyrics(
         dataStoreManager: DataStoreManager,
         track: Track,
         duration: Int,
         lyrics: Lyrics,
     ): Flow<Resource<String>>
 
-    fun insertXevraeTranslatedLyrics(
+    fun insertSimpMusicTranslatedLyrics(
         dataStoreManager: DataStoreManager,
         track: Track,
         translatedLyrics: Lyrics,

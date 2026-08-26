@@ -1,5 +1,6 @@
 package com.xevrae.domain.mediaservice.player
 
+import com.xevrae.domain.data.player.GenericCastState
 import com.xevrae.domain.data.player.GenericMediaItem
 import com.xevrae.domain.data.player.GenericTracks
 import com.xevrae.domain.data.player.PlayerError
@@ -11,6 +12,9 @@ interface MediaPlayerListener {
     fun onPlaybackStateChanged(playbackState: Int) {}
 
     fun onIsPlayingChanged(isPlaying: Boolean) {}
+
+    // Default no-op so non-emitting implementors (e.g. the JVM adapter) don't have to override it.
+    fun onSeeked(positionMs: Long) {}
 
     fun onMediaItemTransition(
         mediaItem: GenericMediaItem?,
@@ -36,4 +40,6 @@ interface MediaPlayerListener {
     fun onCrossfadeStateChanged(isCrossfading: Boolean) {}
 
     fun onVolumeChanged(volume: Float) {}
+
+    fun onCastStateChanged(castState: GenericCastState) {}
 }
