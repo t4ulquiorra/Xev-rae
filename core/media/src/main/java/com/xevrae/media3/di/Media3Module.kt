@@ -327,7 +327,6 @@ private fun provideResolvingDataSourceFactory(
     streamRepository: StreamRepository,
     coroutineScope: CoroutineScope,
 ): DataSource.Factory {
-    val chunkLength = 10 * 512 * 1024L
     return ResolvingDataSource.Factory(cacheDataSourceFactory) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
         Logger.w("Stream", mediaId)
@@ -345,7 +344,7 @@ private fun provideResolvingDataSourceFactory(
                 }
             }
             Logger.w("Stream", "Downloaded $mediaId")
-            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
+            return@Factory dataSpec
         }
         if (playerCache.isFullyCached(mediaId, dataSpec.position)) {
             if (dataSpec.position == 0L) {
@@ -360,7 +359,7 @@ private fun provideResolvingDataSourceFactory(
                 }
             }
             Logger.w("Stream", "Cached $mediaId")
-            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
+            return@Factory dataSpec
         }
         var dataSpecReturn: DataSpec = dataSpec
         var resolved = false
@@ -375,7 +374,7 @@ private fun provideResolvingDataSourceFactory(
                         val is403Url = streamRepository.is403Url(videoUrl).firstOrNull() != false
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
-                            dataSpecReturn = dataSpec.withUri(videoUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
+                            dataSpecReturn = dataSpec.withUri(videoUrl.toUri())
                             resolved = true
                             return@runBlocking
                         }
@@ -391,7 +390,7 @@ private fun provideResolvingDataSourceFactory(
                     ?.let {
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Video")
-                        dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
+                        dataSpecReturn = dataSpec.withUri(it.toUri())
                         resolved = true
                     }
             } else {
@@ -403,7 +402,7 @@ private fun provideResolvingDataSourceFactory(
                         val is403Url = streamRepository.is403Url(audioUrl).firstOrNull() != false
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
-                            dataSpecReturn = dataSpec.withUri(audioUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
+                            dataSpecReturn = dataSpec.withUri(audioUrl.toUri())
                             resolved = true
                             return@runBlocking
                         }
@@ -419,7 +418,7 @@ private fun provideResolvingDataSourceFactory(
                     ?.let {
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Audio")
-                        dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
+                        dataSpecReturn = dataSpec.withUri(it.toUri())
                         resolved = true
                     }
             }
@@ -446,6 +445,7 @@ private fun provideCacheDataSource(
             CacheDataSource
                 .Factory()
                 .setCache(playerCache)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
                 .setUpstreamDataSourceFactory(
                     DefaultDataSource
                         .Factory(
