@@ -62,6 +62,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
@@ -772,7 +773,10 @@ fun NowPlayingScreenContent(
     if (screenDataState.lyricsData != null && controllerState.isPlaying) {
         KeepScreenOn()
     }
-    
+
+    // Suppress stretch overscroll for the NowPlayingPanel — the scroll and pager gestures should
+    // stop cleanly at the edge rather than rubber-band-stretching (Android 12+ default behavior).
+    CompositionLocalProvider(LocalOverscrollFactory provides null) {
     // FIX: Removed inner padding because the ModalBottomSheet is now handling it.
     Box(
         modifier = Modifier.fillMaxSize()
@@ -2359,5 +2363,7 @@ fun NowPlayingScreenContent(
                 }
             }
         }
-    }
+    } // Box
+    } // CompositionLocalProvider(LocalOverscrollFactory provides null)
 }
+
