@@ -232,12 +232,19 @@ import xevrae.composeapp.generated.resources.unsynced
 import xevrae.composeapp.generated.resources.upvote
 import xevrae.composeapp.generated.resources.view_count
 import xevrae.composeapp.generated.resources.vote_error
+import com.xevrae.extension.smoothScrimBrush
 import xevrae.composeapp.generated.resources.vote_submitted
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
 private const val TAG = "NowPlayingScreen"
 private val RICH_SYNC_TIMESTAMP_REGEX = Regex("""<\d{2}:\d{2}\.\d{2,3}>\s*""")
+private val WHITESPACE_REGEX = Regex("""\s+""")
+
+private fun String.stripRichSyncTimestamps(): String =
+    replace(RICH_SYNC_TIMESTAMP_REGEX, " ")
+        .replace(WHITESPACE_REGEX, " ")
+        .trim()
 
 /**
  * Maximum opacity of the dark scrim overlay behind [NowPlayingScreen] when fully expanded.
@@ -999,7 +1006,7 @@ fun NowPlayingScreenContent(
                                     )
                                 }
                             }
-                            // Bottom gradient overlay
+                            // Bottom gradient overlay — smooth transition per state
                             Crossfade(
                                 targetState = showHideControlLayout,
                                 modifier =
@@ -1013,12 +1020,10 @@ fun NowPlayingScreenContent(
                                             Modifier
                                                 .fillMaxSize()
                                                 .background(
-                                                    Brush.verticalGradient(
-                                                        colorStops =
-                                                            arrayOf(
-                                                                0.2f to overlay,
-                                                                1f to Color(0xFF121212),
-                                                            ),
+                                                    smoothScrimBrush(
+                                                        from = overlay,
+                                                        to = Color(0xFF121212),
+                                                        startFraction = 0.2f,
                                                     ),
                                                 ),
                                     )
@@ -1028,15 +1033,11 @@ fun NowPlayingScreenContent(
                                             Modifier
                                                 .fillMaxSize()
                                                 .background(
-                                                    Brush.verticalGradient(
-                                                        colorStops =
-                                                            arrayOf(
-                                                                0f to Color.Black.copy(alpha = 0.5f),
-                                                                0.1f to Color.Transparent,
-                                                                0.75f to Color.Transparent,
-                                                                0.95f to Color(0xFF121212).copy(alpha = 0.7f),
-                                                                1f to Color(0xFF121212),
-                                                            ),
+                                                    smoothScrimBrush(
+                                                        from = Color.Black.copy(alpha = 0f),
+                                                        to = Color(0xFF121212),
+                                                        startFraction = 0.92f,
+                                                        endFraction = 0.97f,
                                                     ),
                                                 ),
                                     )
@@ -1170,13 +1171,11 @@ fun NowPlayingScreenContent(
                                                                 Modifier
                                                                     .fillMaxSize()
                                                                     .background(
-                                                                        Brush.verticalGradient(
-                                                                            colorStops =
-                                                                                arrayOf(
-                                                                                    0.03f to blackMoreOverlay,
-                                                                                    0.15f to overlay,
-                                                                                    0.8f to Color.Transparent,
-                                                                                ),
+                                                                        smoothScrimBrush(
+                                                                            from = blackMoreOverlay,
+                                                                            to = overlay.copy(alpha = 0f),
+                                                                            startFraction = 0.03f,
+                                                                            endFraction = 0.8f,
                                                                         ),
                                                                     ),
                                                         ) {
@@ -1448,14 +1447,59 @@ fun NowPlayingScreenContent(
                                         }.aspectRatio(1f),
                             )
 
-                            Spacer(
+                            // Spotify-style current lyric line — vertically centered in the gap
+                            // between the artwork and the info layout below.
+                            Box(
+                                contentAlignment = Alignment.Center,
                                 modifier =
                                     Modifier
                                         .animateContentSize()
                                         .height(
                                             middleLayoutPaddingDp.dp,
                                         ).fillMaxWidth(),
-                            )
+                            ) {
+                                val inlineLyrics = screenDataState.lyricsData?.lyrics
+                                val hasSyncedLyrics =
+                                    inlineLyrics != null &&
+                                        inlineLyrics.syncType != null &&
+                                        inlineLyrics.syncType != "UNSYNCED" &&
+                                        inlineLyrics.lines != null
+                                // Canvas mode has its own subtitle overlay — never show both.
+                                val currentLyricLineText =
+                                    if (!hasSyncedLyrics ||
+                                        screenDataState.canvasData != null ||
+                                        canvasSubtitleLineIndex < 0
+                                    ) {
+                                        ""
+                                    } else {
+                                        inlineLyrics
+                                            ?.lines
+                                            ?.getOrNull(canvasSubtitleLineIndex)
+                                            ?.words
+                                            ?.stripRichSyncTimestamps()
+                                            .orEmpty()
+                                    }
+                                Crossfade(
+                                    targetState = currentLyricLineText,
+                                    animationSpec = tween(durationMillis = 300),
+                                    label = "inlineLyricLine",
+                                ) { lineText ->
+                                    Text(
+                                        text = lineText,
+                                        style = typo().labelSmall,
+                                        color = Color.White,
+                                        maxLines = 1,
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 28.dp)
+                                                .basicMarquee(
+                                                    iterations = Int.MAX_VALUE,
+                                                    animationMode = MarqueeAnimationMode.Immediately,
+                                                ).focusable(),
+                                    )
+                                }
+                            }
 
                             // Info Layout
                             Box {
@@ -1870,31 +1914,82 @@ fun NowPlayingScreenContent(
                                                 ),
                                         contentAlignment = Alignment.BottomStart,
                                     ) {
-                                        Column {
-                                            this@Column.AnimatedVisibility(canvasSubtitleLineIndex > -1) {
-                                                // Canvas subtitle - above artist
+                                        // Gradient backdrop — transparent at top so Canvas shows
+                                        // through, fading to dark at the bottom.
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .background(
+                                                        smoothScrimBrush(
+                                                            from = Color.Black.copy(alpha = 0f),
+                                                            to = Color.Black.copy(alpha = 0.85f),
+                                                        ),
+                                                    ),
+                                        )
+
+                                        Column(
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .animateContentSize(),
+                                        ) {
+                                            this@Column.AnimatedVisibility(
+                                                visible = canvasSubtitleLineIndex > -1,
+                                                enter = fadeIn() + expandVertically(),
+                                                exit = fadeOut() + shrinkVertically(),
+                                            ) {
+                                                // Canvas subtitle - Spotify-style: lyrics line above metadata row
                                                 val lineText =
                                                     screenDataState.lyricsData
                                                         ?.lyrics
                                                         ?.lines
                                                         ?.getOrNull(canvasSubtitleLineIndex)
                                                         ?.words
-                                                        ?.replace(RICH_SYNC_TIMESTAMP_REGEX, "")
-                                                        ?.trim()
+                                                        ?.stripRichSyncTimestamps()
                                                 if (!lineText.isNullOrBlank()) {
-                                                    Text(
-                                                        modifier =
-                                                            Modifier
-                                                                .padding(bottom = 8.dp)
-                                                                .basicMarquee(
-                                                                    iterations = Int.MAX_VALUE,
-                                                                    animationMode = MarqueeAnimationMode.Immediately,
-                                                                ).focusable(),
-                                                        text = lineText,
-                                                        style = typo().bodyMedium,
-                                                        color = Color.White,
-                                                        maxLines = 1,
-                                                    )
+                                                    Column(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                    ) {
+                                                        Text(
+                                                            modifier =
+                                                                Modifier
+                                                                    .fillMaxWidth()
+                                                                    .padding(bottom = 4.dp)
+                                                                    .basicMarquee(
+                                                                        iterations = Int.MAX_VALUE,
+                                                                        animationMode = MarqueeAnimationMode.Immediately,
+                                                                    ).focusable(),
+                                                            text = lineText,
+                                                            style = typo().bodyMedium,
+                                                            color = Color.White,
+                                                            maxLines = 1,
+                                                        )
+                                                        val translatedLineText =
+                                                            screenDataState.lyricsData
+                                                                ?.translatedLyrics
+                                                                ?.first
+                                                                ?.lines
+                                                                ?.getOrNull(canvasSubtitleLineIndex)
+                                                                ?.words
+                                                                ?.stripRichSyncTimestamps()
+                                                        if (!translatedLineText.isNullOrBlank()) {
+                                                            Text(
+                                                                modifier =
+                                                                    Modifier
+                                                                        .fillMaxWidth()
+                                                                        .padding(bottom = 8.dp)
+                                                                        .basicMarquee(
+                                                                            iterations = Int.MAX_VALUE,
+                                                                            animationMode = MarqueeAnimationMode.Immediately,
+                                                                        ).focusable(),
+                                                                text = translatedLineText,
+                                                                style = typo().bodyMedium,
+                                                                color = Color.Yellow,
+                                                                maxLines = 1,
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                             Row(
@@ -2099,81 +2194,88 @@ fun NowPlayingScreenContent(
                         Spacer(modifier = Modifier.height(20.dp))
                         AnimatedVisibility(visible = screenDataState.songInfoData != null) {
                             ElevatedCard(
-                                shape = RoundedCornerShape(15.dp),
-                                colors =
-                                    CardDefaults.elevatedCardColors().copy(
-                                        containerColor = startColor.value,
-                                    ),
-                                modifier = Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                ) {
+                                onClick = {
                                     val song = sharedViewModel.nowPlayingState.value?.songEntity
                                     (
                                         song?.artistId?.firstOrNull()?.takeIf { it.isNotEmpty() }
                                             ?: screenDataState.songInfoData?.authorId
                                     )?.let { channelId ->
                                         onDismiss()
-                                        navController.navigate(ArtistDestination(channelId = channelId))
+                                        navController.navigate(
+                                            ArtistDestination(
+                                                channelId = channelId,
+                                            ),
+                                        )
                                     }
                                 },
+                                shape = RoundedCornerShape(15.dp),
+                                colors =
+                                    CardDefaults.elevatedCardColors().copy(
+                                        containerColor = Color(0xFF212121),
+                                    ),
                             ) {
-                                Box(
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .height(250.dp),
-                                ) {
-                                    val thumb = screenDataState.songInfoData?.authorThumbnail
-                                    AsyncImage(
-                                        model =
-                                            ImageRequest
-                                                .Builder(LocalPlatformContext.current)
-                                                .data(thumb)
-                                                .diskCachePolicy(CachePolicy.ENABLED)
-                                                .diskCacheKey(thumb)
-                                                .crossfade(550)
-                                                .build(),
-                                        placeholder = ColorPainter(androidx.compose.ui.graphics.Color(0xFF2A2A2A)),
-                                        error = ColorPainter(androidx.compose.ui.graphics.Color(0xFF2A2A2A)),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier =
-                                            Modifier
-                                                .fillMaxSize()
-                                                .alpha(0.8f)
-                                                .clip(
-                                                    RoundedCornerShape(15.dp),
-                                                ),
-                                    )
+                                Column(modifier = Modifier.fillMaxWidth()) {
                                     Box(
                                         modifier =
                                             Modifier
-                                                .padding(15.dp)
-                                                .fillMaxSize(),
+                                                .fillMaxWidth()
+                                                .height(250.dp),
                                     ) {
-                                        Column(Modifier.align(Alignment.TopStart)) {
-                                            Spacer(modifier = Modifier.height(5.dp))
-                                            Text(
-                                                text = stringResource(Res.string.artists),
-                                                style = typo().labelMedium,
-                                                color = Color.White,
-                                            )
-                                        }
-                                        Column(Modifier.align(Alignment.BottomStart)) {
-                                            Text(
-                                                text = screenDataState.songInfoData?.author ?: "",
-                                                style = typo().labelMedium,
-                                                color = Color.White,
-                                            )
-                                            Spacer(modifier = Modifier.height(5.dp))
-                                            Text(
-                                                text = screenDataState.songInfoData?.subscribers ?: "",
-                                                style = typo().bodySmall,
-                                                textAlign = TextAlign.End,
-                                            )
-                                            Spacer(modifier = Modifier.height(5.dp))
-                                        }
+                                        val thumb = screenDataState.songInfoData?.authorThumbnail
+                                        AsyncImage(
+                                            model =
+                                                ImageRequest
+                                                    .Builder(LocalPlatformContext.current)
+                                                    .data(thumb)
+                                                    .diskCachePolicy(CachePolicy.ENABLED)
+                                                    .diskCacheKey(thumb)
+                                                    .crossfade(550)
+                                                    .build(),
+                                            placeholder = ColorPainter(androidx.compose.ui.graphics.Color(0xFF2A2A2A)),
+                                            error = ColorPainter(androidx.compose.ui.graphics.Color(0xFF2A2A2A)),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                        Box(
+                                            modifier =
+                                                Modifier
+                                                    .matchParentSize()
+                                                    .background(
+                                                        smoothScrimBrush(
+                                                            from = Color.Black.copy(alpha = 0.6f),
+                                                            to = Color.Black.copy(alpha = 0f),
+                                                            endFraction = 0.4f,
+                                                        ),
+                                                    ),
+                                        )
+                                        Text(
+                                            text = stringResource(Res.string.artists),
+                                            style = typo().labelMedium,
+                                            color = Color.White,
+                                            modifier =
+                                                Modifier
+                                                    .align(Alignment.TopStart)
+                                                    .padding(15.dp),
+                                        )
+                                    }
+                                    Column(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 15.dp, vertical = 12.dp),
+                                    ) {
+                                        Text(
+                                            text = screenDataState.songInfoData?.author ?: "",
+                                            style = typo().titleMedium,
+                                            color = Color.White,
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = screenDataState.songInfoData?.subscribers ?: "",
+                                            style = typo().bodySmall,
+                                            color = Color.White.copy(alpha = 0.7f),
+                                        )
                                     }
                                 }
                             }
