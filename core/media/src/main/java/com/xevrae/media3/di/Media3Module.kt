@@ -320,11 +320,15 @@ private fun provideResolvingDataSourceFactory(
     streamRepository: StreamRepository,
     coroutineScope: CoroutineScope,
 ): DataSource.Factory {
+    val chunkLength = 10 * 512 * 1024L
     return ResolvingDataSource.Factory(cacheDataSourceFactory) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
         Logger.w("Stream", mediaId)
         Logger.w("Stream", mediaId.startsWith(MERGING_DATA_TYPE.VIDEO).toString())
         if (downloadCache.isFullyCached(mediaId, dataSpec.position)) {
+            // Only on the first chunk: the subrange below makes the resolver run once per
+            // chunk, and updateFormat is a fire-and-forget youTube.player() call with no
+            // in-flight dedup, so leaving it ungated would fan out one request per 5 MiB.
             if (dataSpec.position == 0L) {
                 coroutineScope.launch(Dispatchers.IO) {
                     streamRepository.updateFormat(
@@ -337,9 +341,10 @@ private fun provideResolvingDataSourceFactory(
                 }
             }
             Logger.w("Stream", "Downloaded $mediaId")
-            return@Factory dataSpec
+            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
         }
         if (playerCache.isFullyCached(mediaId, dataSpec.position)) {
+            // See the note above: once per track, not once per chunk.
             if (dataSpec.position == 0L) {
                 coroutineScope.launch(Dispatchers.IO) {
                     streamRepository.updateFormat(
@@ -352,7 +357,21 @@ private fun provideResolvingDataSourceFactory(
                 }
             }
             Logger.w("Stream", "Cached $mediaId")
-            return@Factory dataSpec
+            // Every byte is on disk right now, so CacheDataSource can serve this chunk
+            // without ever reaching upstream, and the bare media id is safe as the URI.
+            //
+            // It is only safe for ONE chunk though. A bare id has no scheme, so
+            // DefaultDataSource routes it to FileDataSource, not to OkHttp — the failure
+            // is FileNotFoundException (ERROR_CODE_IO_FILE_NOT_FOUND), which Media3 lists
+            // as non-retriable and which CrossfadeExoPlayerAdapter does not recover from
+            // either. Meanwhile CacheDataSource.read() walks span to span inside a single
+            // open() without consulting this resolver again, so an unbounded DataSpec
+            // would stake the whole remaining track on a snapshot taken here: one LRU
+            // eviction (precache and downloads write to playerCache concurrently) or one
+            // "clear cache" tap mid-song and playback dies with no way back.
+            // Capping to chunkLength forces a re-check at every chunk boundary, so a
+            // cache that shrinks under us falls back to resolving a real URL.
+            return@Factory dataSpec.subrange(dataSpec.uriPositionOffset, chunkLength)
         }
         var dataSpecReturn: DataSpec = dataSpec
         var resolved = false
@@ -367,7 +386,7 @@ private fun provideResolvingDataSourceFactory(
                         val is403Url = streamRepository.is403Url(videoUrl).firstOrNull() != false
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
-                            dataSpecReturn = dataSpec.withUri(videoUrl.toUri())
+                            dataSpecReturn = dataSpec.withUri(videoUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
                             resolved = true
                             return@runBlocking
                         }
@@ -383,7 +402,7 @@ private fun provideResolvingDataSourceFactory(
                     ?.let {
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Video")
-                        dataSpecReturn = dataSpec.withUri(it.toUri())
+                        dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
                         resolved = true
                     }
             } else {
@@ -395,7 +414,7 @@ private fun provideResolvingDataSourceFactory(
                         val is403Url = streamRepository.is403Url(audioUrl).firstOrNull() != false
                         Logger.d("Stream", "is 403 $is403Url")
                         if (!is403Url) {
-                            dataSpecReturn = dataSpec.withUri(audioUrl.toUri())
+                            dataSpecReturn = dataSpec.withUri(audioUrl.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
                             resolved = true
                             return@runBlocking
                         }
@@ -411,7 +430,7 @@ private fun provideResolvingDataSourceFactory(
                     ?.let {
                         Logger.d("Stream", it)
                         Logger.w("Stream", "Audio")
-                        dataSpecReturn = dataSpec.withUri(it.toUri())
+                        dataSpecReturn = dataSpec.withUri(it.toUri()).subrange(dataSpec.uriPositionOffset, chunkLength)
                         resolved = true
                     }
             }
